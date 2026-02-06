@@ -1,0 +1,4 @@
+.layout-main {
+    width: 100%;
+    min-height: calc(100vh - 56px); /* 헤더 높이 고려 */
+}

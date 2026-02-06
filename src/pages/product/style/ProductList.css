@@ -1,0 +1,137 @@
+/* 전체 페이지 */
+.product-page {
+    width: 100%;
+}
+
+.product-container {
+    width: 100%;
+}
+
+/* 제목 */
+.page-title {
+    font-size: 1.4rem;
+    margin-bottom: 16px;
+}
+
+/* Grid 기본 (모바일) */
+.product-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: 1fr; /* 모바일: 1열 */
+}
+
+/* 카드 */
+.product-card {
+    position: relative;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* PC에서만 hover */
+@media (hover: hover) {
+    .product-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
+    }
+
+    .product-card:hover .product-image {
+        transform: scale(1.06);
+    }
+}
+
+.product-image-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+            to bottom,
+            rgba(0,0,0,0) 60%,
+            rgba(0,0,0,0.15)
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.product-card:hover .product-image-wrapper::after {
+    opacity: 1;
+}
+
+/* 이미지 비율 담당 */
+.product-image-wrapper {
+    width: 100%;
+    aspect-ratio: 3 / 4;   /* 모바일 */
+    overflow: hidden;
+}
+
+/* 이미지 */
+.product-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.35s ease;
+
+}
+
+/*PC는 비율을 다르게 적용*/
+@media (min-width: 1024px) {
+    .product-image-wrapper {
+        aspect-ratio: 4 / 5; /* PC */
+    }
+}
+/* 정보 영역 */
+.product-info {
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 6px;
+
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.product-name {
+    font-size: 1rem;
+    margin-bottom: 4px;
+}
+
+.product-price {
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.product-badge {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: #00c853;
+    color: white;
+    font-size: 0.7rem;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-weight: 600;
+}
+
+
+/* 태블릿 */
+@media (min-width: 768px) {
+    .product-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* PC */
+@media (min-width: 1024px) {
+    .product-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    }
+    .product-image-wrapper {
+        aspect-ratio: 4 / 5;
+    }
+}
