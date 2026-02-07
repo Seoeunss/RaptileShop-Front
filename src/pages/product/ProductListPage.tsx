@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import './style/productList.css';
+import '../common/style/CommonStyle.css'
 import BTS1 from "../../assets/images/BTS1.jpeg";
 import BTS2 from "../../assets/images/BTS2.jpg";
 import BTS3 from "../../assets/images/BTS3.jpeg";
@@ -62,11 +63,11 @@ export default function ProductListPage() {
                             className="product-card"
                             onClick={() => navigate(`/products/${product.id}`)}
                         >
-                            <div className="product-image-wrapper">
+                            <div className="image-wrapper">
                                 <img
                                     src={product.imageUrl}
                                     alt={product.name}
-                                    className="product-image"
+
                                 />
                             </div>
                             <div className="product-info">

@@ -1,0 +1,143 @@
+/* =========================
+   주문하기 페이지 전체
+========================= */
+
+.order-page {
+    width: 100%;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+/* 제목 */
+.order-page-title {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+/* =========================
+   레이아웃
+========================= */
+
+.order-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* =========================
+   상품 이미지
+========================= */
+
+.order-image-wrapper {
+    width: 100%;
+    aspect-ratio: 3 / 4;        /* 모바일 기준 프레임 */
+    background: #f2f2f2;
+    border-radius: 16px;
+    overflow: hidden;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.order-image {
+    width: 100%;
+    aspect-ratio: 3 / 4;   /* 모바일 기준 */
+    object-fit: cover;     /* ⭐ 핵심 */
+    border-radius: 16px;
+    display: block;
+}
+
+@media (min-width: 1024px) {
+    .order-image {
+        aspect-ratio: 4 / 5;
+        max-width: 420px;
+    }
+}
+
+@media (min-width: 1024px) {
+    .order-image-wrapper {
+        width: 420px;
+        aspect-ratio: auto;     /* PC는 자연 비율 */
+    }
+
+    .order-image {
+        max-height: 560px;
+    }
+}
+/* =========================
+   상품 정보
+========================= */
+
+.order-info {
+    width: 100%;
+}
+
+.order-name {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.order-price {
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 24px;
+}
+
+/* =========================
+   결제 버튼
+========================= */
+
+.order-pay-btn {
+    width: 100%;
+    padding: 14px;
+    border-radius: 14px;
+    background: #000;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+}
+
+.order-pay-btn:active {
+    transform: scale(0.98);
+}
+
+/* =========================
+   PC / 태블릿
+========================= */
+
+@media (min-width: 1024px) {
+    .order-page {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 32px;
+    }
+
+    .order-wrapper {
+        flex-direction: row;
+        gap: 48px;
+        align-items: flex-start;
+    }
+
+    .order-image {
+        width: 420px;
+        aspect-ratio: auto;
+    }
+
+    .order-info {
+        max-width: 420px;
+    }
+
+    .order-name {
+        font-size: 22px;
+    }
+
+    .order-price {
+        font-size: 24px;
+    }
+}

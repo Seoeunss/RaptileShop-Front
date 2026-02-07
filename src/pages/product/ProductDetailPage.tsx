@@ -1,6 +1,7 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { products } from '../../data/Product';
 import './style/ProductDetailPage.css';
+import '../common/style/CommonStyle.css'
 
 const isLoggedIn = true; // 나중에 auth 상태로 교체
 
@@ -30,15 +31,14 @@ export default function ProductDetailPage() {
             <button className="back-btn" onClick={() => navigate(-1)}>
                 ← 뒤로가기
             </button>
-
-            <div className="detail-wrapper">
-                <img
-                    src={product.imageUrl}
-                    alt={product.name}
-                    className="detail-image"
-                />
-
-                <div className="detail-info">
+            <div className="product-detail-body">
+                <div className="image-wrapper">
+                    <img
+                        src={product.imageUrl}
+                        alt={product.name}
+                    />
+                </div>
+                <div className="product-detail-info">
                     <h1>{product.name}</h1>
                     <p className="price">
                         {product.price.toLocaleString()}원

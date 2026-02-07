@@ -1,0 +1,22 @@
+/* 공통 이미지 컨테이너 */
+.image-wrapper {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    border-radius: 16px;
+}
+
+/* 공통 이미지 */
+.image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;   /* 기준 */
+    display: block;
+}
+
+/* PC */
+@media (min-width: 1024px) {
+    .image-wrapper {
+        aspect-ratio: 4 / 5;
+    }
+}
