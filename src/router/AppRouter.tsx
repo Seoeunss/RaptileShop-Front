@@ -12,13 +12,15 @@ import SignupPage from '../pages/auth/SignupPage';
 import OrderPage from '../pages/order/OrderPage.tsx';
 import PaymentSuccessPage from '../pages/payments/PaymentSuccessPage';
 import PaymentFailPage from '../pages/payments/PaymentFailPage';
+import HomePage from "../pages/HomePage.tsx";
 
 export default function AppRouter() {
     return (
         <BrowserRouter>
             <Layout>
                 <Routes>
-                    <Route path="/" element={<ProductListPage />} />
+                    <Route path="/" element={<HomePage />} />
+                    <Route path="/products" element={<ProductListPage />} />
                     <Route path="/products/:id" element={<ProductDetailPage />} />
                     <Route path="/products/new" element={<ProductCreatePage />} />
 

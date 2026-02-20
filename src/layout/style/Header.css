@@ -1,0 +1,103 @@
+/* Header 전용 스타일 */
+
+.appHeader {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line, rgba(15, 23, 42, 0.08));
+}
+
+.appHeaderInner {
+    height: 68px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+}
+
+.appBrand {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 120px;
+}
+
+.appLogoMark {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, var(--primary, #12b3a6), #6ee7d8);
+}
+
+.appLogoText {
+    font-weight: 800;
+    letter-spacing: -0.02em;
+}
+
+.appNav {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+}
+
+.appNavLink {
+    font-size: 14px;
+    color: #334155;
+    padding: 8px 10px;
+    border-radius: 10px;
+    text-decoration: none;
+}
+
+.appNavLink:hover {
+    background: rgba(18, 179, 166, 0.08);
+    color: #0f766e;
+}
+
+.appHeaderActions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.appBtn {
+    border: 1px solid transparent;
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.appBtnPrimary {
+    background: var(--primary, #12b3a6);
+    color: #fff;
+}
+.appBtnPrimary:hover {
+    background: var(--primaryHover, #0fa79b);
+}
+
+.appIconBtn {
+    border: 1px solid var(--line, rgba(15, 23, 42, 0.08));
+    background: #fff;
+    border-radius: 12px;
+    width: 40px;
+    height: 40px;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+}
+
+.appOnlyMobile {
+    display: none;
+}
+
+@media (max-width: 720px) {
+    .appNav {
+        display: none;
+    }
+    .appOnlyMobile {
+        display: inline-grid;
+    }
+}
