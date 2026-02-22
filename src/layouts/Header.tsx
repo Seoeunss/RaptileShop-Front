@@ -1,8 +1,10 @@
 import "./style/Header.css";
+import { NavLink } from "react-router-dom";
 
 type NavItem = {
     label: string;
-    href: string;
+    to: string;           // ✅ href -> to
+    external?: boolean;   // ✅ 외부 링크/해시용 (선택)
 };
 
 type HeaderProps = {
@@ -15,19 +17,17 @@ type HeaderProps = {
     onMenuClick?: () => void;
 };
 
+function isExternalLink(to: string) {
+    return to.startsWith("http") || to.startsWith("#");
+}
+
 export default function Header({
-                                      logoText = "Logo",
-                                      navItems = [
-                                          { label: "실용팁", href: "#tips" },
-                                          { label: "공지사항", href: "#notice" },
-                                          { label: "고객센터", href: "#support" },
-                                          { label: "마이룸", href: "#mypage" },
-                                          { label: "로그인", href: "#login" },
-                                      ],
-                                      rightButtonText = "회원가입",
-                                      onRightButtonClick,
-                                      onMenuClick,
-                                  }: HeaderProps) {
+                                   logoText = "Logo",
+                                   navItems = [],
+                                   rightButtonText = "회원가입",
+                                   onRightButtonClick,
+                                   onMenuClick,
+                               }: HeaderProps) {
     return (
         <header className="appHeader">
             <div className="appContainer appHeaderInner">
@@ -37,15 +37,31 @@ export default function Header({
                 </div>
 
                 <nav className="appNav" aria-label="메인 메뉴">
-                    {navItems.map((item) => (
-                        <a key={item.label} className="appNavLink" href={item.href}>
-                            {item.label}
-                        </a>
-                    ))}
+                    {navItems.map((item) => {
+                        const external = item.external || isExternalLink(item.to);
+
+                        if (external) {
+                            return (
+                                <a key={item.label} className="appNavLink" href={item.to}>
+                                    {item.label}
+                                </a>
+                            );
+                        }
+
+                        return (
+                            <NavLink
+                                key={item.label}
+                                className="appNavLink"
+                                to={item.to}
+                                end={item.to === "/"}   // 홈일 때 active 꼬임 방지
+                            >
+                                {item.label}
+                            </NavLink>
+                        );
+                    })}
                 </nav>
 
                 <div className="appHeaderActions">
-                    {/* 모바일 햄버거(원하면 Layout에서 Drawer 연결) */}
                     <button
                         className="appIconBtn appOnlyMobile"
                         type="button"
