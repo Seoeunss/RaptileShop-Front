@@ -24,7 +24,7 @@ export default function Sidebar({ variant, onNavigate }: Props) {
                     <NavLink
                         key={item.to}
                         to={item.to}
-                        end={item.to === "/"}
+                        end
                         onClick={onNavigate}
                         className={({ isActive }) => `sidebarItem ${isActive ? "active" : ""}`}
                     >
