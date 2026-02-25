@@ -10,8 +10,8 @@ type NavItem = {
 type HeaderProps = {
     logoText?: string;
     navItems?: NavItem[];
-    rightButtonText?: string;
-    onRightButtonClick?: () => void;
+    onLoginClick?: () => void;
+    onSignupClick?: () => void;
 
     /** 모바일 햄버거 버튼 쓸거면 연결 */
     onMenuClick?: () => void;
@@ -24,8 +24,8 @@ function isExternalLink(to: string) {
 export default function Header({
                                    logoText = "Logo",
                                    navItems = [],
-                                   rightButtonText = "회원가입",
-                                   onRightButtonClick,
+                                   onLoginClick,
+                                   onSignupClick,
                                    onMenuClick,
                                }: HeaderProps) {
     return (
@@ -73,8 +73,12 @@ export default function Header({
                         </svg>
                     </button>
 
-                    <button className="appBtn appBtnPrimary" onClick={onRightButtonClick}>
-                        {rightButtonText}
+                    <button className="appBtn appBtnGhost" onClick={onLoginClick}>
+                        로그인
+                    </button>
+
+                    <button className="appBtn appBtnPrimary" onClick={onSignupClick}>
+                        회원가입
                     </button>
                 </div>
             </div>

@@ -38,7 +38,7 @@ export const appRoutes: RouteDef[] = [
     { path: "/products/new", element: <ProductCreatePage />, headerLabel: "상품등록", bottomLabel: "등록" },
     { path: "/products/:id", element: <ProductDetailPage /> },
 
-    { path: "/login", element: <LoginPage />, headerLabel: "로그인", bottomLabel: "로그인" },
+    { path: "/login", element: <LoginPage /> },
     { path: "/signup", element: <SignupPage /> },
 
     { path: "/chat", element: <ChatListPage />, headerLabel: "채팅", bottomLabel: "채팅" },
