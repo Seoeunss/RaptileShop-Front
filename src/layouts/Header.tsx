@@ -53,7 +53,7 @@ export default function Header({
                                 key={item.label}
                                 className="appNavLink"
                                 to={item.to}
-                                end={item.to === "/"}   // 홈일 때 active 꼬임 방지
+                                end   // 정확히 일치할 때만 active (prefix 오탐 방지)
                             >
                                 {item.label}
                             </NavLink>
