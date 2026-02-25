@@ -11,6 +11,8 @@ import SignupPage from "../pages/auth/SignupPage";
 import OrderPage from "../pages/order/OrderPage";
 import PaymentSuccessPage from "../pages/payments/PaymentSuccessPage";
 import PaymentFailPage from "../pages/payments/PaymentFailPage";
+import ChatListPage from "../pages/chat/ChatListPage";
+import ChatPage from "../pages/chat/ChatPage";
 import type {JSX} from "react";
 
 export type RouteDef = {
@@ -38,6 +40,9 @@ export const appRoutes: RouteDef[] = [
 
     { path: "/login", element: <LoginPage />, headerLabel: "로그인", bottomLabel: "로그인" },
     { path: "/signup", element: <SignupPage /> },
+
+    { path: "/chat", element: <ChatListPage />, headerLabel: "채팅", bottomLabel: "채팅" },
+    { path: "/chat/:id", element: <ChatPage /> },
 
     { path: "/orders/:id", element: <OrderPage /> },
     { path: "/payment/success", element: <PaymentSuccessPage /> },
