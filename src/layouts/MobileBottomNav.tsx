@@ -26,7 +26,7 @@ export default function MobileBottomNav() {
                         fontWeight: isActive ? 700 : 500,
                         opacity: isActive ? 1 : 0.75,
                     })}
-                    end={item.to === "/"}
+                    end
                 >
                     {item.label}
                 </NavLink>
