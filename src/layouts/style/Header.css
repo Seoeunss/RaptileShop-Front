@@ -55,6 +55,12 @@
     color: #0f766e;
 }
 
+.appNavLink.active {
+    background: rgba(18, 179, 166, 0.1);
+    color: #0f766e;
+    font-weight: 700;
+}
+
 .appHeaderActions {
     display: flex;
     align-items: center;
