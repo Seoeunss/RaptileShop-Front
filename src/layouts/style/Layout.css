@@ -5,12 +5,36 @@
     flex-direction: column;
 }
 
+/* 메인 콘텐츠 - 전체 화면 */
+.layout-main {
+    flex: 1;
+    min-height: 0;
+}
+
 /* Header 아래: PC는 2컬럼 */
 .appBody {
     flex: 1;
     display: grid;
     grid-template-columns: 260px 1fr;
     min-height: 0;
+}
+
+/* HomePage 전용 레이아웃 */
+.appBodyHome {
+    flex: 1;
+    display: block; /* HomePage는 1컬럼 */
+    min-height: 0;
+}
+
+.homeMainCol {
+    min-width: 0;
+    width: 100%;
+}
+
+.homeContentContainer {
+    min-width: 0;
+    width: 100%;
+    /* HomePage는 컨테이너 제한 없음 */
 }
 
 /* PC 사이드바 */
@@ -51,45 +75,101 @@
     opacity: 0.7;
 }
 
-/* Sidebar 공통 */
-.sidebar {
-    padding: 12px;
+/* 드로어 오버레이 */
+.drawerOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 40;
 }
+
+/* 드로어 사이드바 */
+.drawerSidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100dvh;
+    width: 300px;
+    background: #fff;
+    z-index: 50;
+    border-right: 1px solid rgba(0,0,0,0.08);
+    transform: translateX(-100%);
+    transition: transform 250ms ease;
+    overflow: auto;
+}
+
+.drawerSidebar.open {
+    transform: translateX(0);
+}
+
+/* Sidebar 내부 */
+.sidebar {
+    padding: 16px;
+}
+
 .sidebarHeader {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
 }
+
 .sidebarTitle {
+    font-size: 18px;
     font-weight: 700;
+    color: #333;
 }
+
 .sidebarCloseBtn {
     border: 1px solid rgba(0,0,0,0.12);
     background: #fff;
-    border-radius: 10px;
+    border-radius: 8px;
     width: 36px;
     height: 36px;
     cursor: pointer;
-}
-.sidebarList {
-    display: grid;
-    gap: 6px;
-}
-.sidebarItem {
-    display: block;
-    padding: 10px 12px;
-    border-radius: 12px;
-    text-decoration: none;
-    color: #111;
-}
-.sidebarItem.active {
-    background: rgba(0,0,0,0.06);
-    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
 }
 
-/* 모바일: 1컬럼 + 드로어 + 하단네비 안전 여백 */
+.sidebarCloseBtn:hover {
+    background: rgba(0,0,0,0.05);
+}
+
+.sidebarList {
+    display: grid;
+    gap: 4px;
+}
+
+.sidebarItem {
+    display: block;
+    padding: 12px 16px;
+    border-radius: 12px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.sidebarItem:hover {
+    background: rgba(0,0,0,0.04);
+}
+
+.sidebarItem.active {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    font-weight: 600;
+}
+
+/* 모바일에서 사이드바 폭 조정 */
 @media (max-width: 768px) {
+    .drawerSidebar {
+        width: 280px;
+    }
+
     .appBody {
         grid-template-columns: 1fr;
     }
@@ -102,31 +182,5 @@
         max-width: 100%;
         padding: 12px;
         padding-bottom: calc(12px + 64px); /* 하단 네비 가림 방지 */
-    }
-
-    .drawerOverlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(0,0,0,0.35);
-        z-index: 40;
-    }
-
-    .drawerSidebar {
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100dvh;
-        width: 82%;
-        max-width: 320px;
-        background: #fff;
-        z-index: 50;
-        border-right: 1px solid rgba(0,0,0,0.08);
-        transform: translateX(-110%);
-        transition: transform 180ms ease;
-        overflow: auto;
-    }
-
-    .drawerSidebar.open {
-        transform: translateX(0);
     }
 }

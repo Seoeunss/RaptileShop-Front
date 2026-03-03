@@ -118,3 +118,54 @@
         display: inline-grid;
     }
 }
+
+/* 기존 스타일들... */
+
+/* 로고 링크 스타일 */
+.appBrandLink {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+    color: inherit;
+    transition: opacity 0.2s ease;
+}
+
+.appBrandLink:hover {
+    opacity: 0.8;
+}
+
+.appBrandLink:active {
+    transform: scale(0.98);
+}
+
+/* 사이드바 토글 버튼 */
+.appSidebarToggle {
+    margin-left: 12px;
+    padding: 6px;
+    border: 1px solid rgba(0,0,0,0.12);
+    background: transparent;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    color: #666;
+}
+
+.appSidebarToggle:hover {
+    background: rgba(0,0,0,0.05);
+    border-color: rgba(0,0,0,0.2);
+    color: #333;
+}
+
+.appSidebarToggle:active {
+    transform: scale(0.95);
+}
+
+/* 모바일에서는 PC용 사이드바 버튼 숨김 */
+@media (max-width: 768px) {
+    .appSidebarToggle {
+        display: none;
+    }
+}

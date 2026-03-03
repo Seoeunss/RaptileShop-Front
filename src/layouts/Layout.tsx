@@ -3,27 +3,45 @@ import { useState } from "react";
 import Header from "./Header";
 import MobileBottomNav from "./MobileBottomNav";
 import AuthModal from "../components/auth/AuthModal";
+import Sidebar from "../components/layout/Sidebar";
 import { Outlet } from "react-router-dom";
 import { headerNavItems } from "../router/routes";
+import "./style/Layout.css";
 
 type AuthTab = "login" | "signup" | null;
 
 export default function Layout() {
     const [authModal, setAuthModal] = useState<AuthTab>(null);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     return (
-        <>
+        <div className="appRoot">
             <Header
-                navItems={headerNavItems}
+                logoText="파충류 마켓"
+                navItems={headerNavItems} // 빈 배열 (메뉴 없음)
                 onLoginClick={() => setAuthModal("login")}
                 onSignupClick={() => setAuthModal("signup")}
-                onMenuClick={() => {
-                    // 헤더 햄버거 -> 드로어 연결은 Day3/Day4에서 붙이면 됨
-                }}
+                onMenuClick={() => setSidebarOpen(true)}
             />
+
+            {/* 드로어 오버레이 */}
+            {sidebarOpen && (
+                <div 
+                    className="drawerOverlay"
+                    onClick={() => setSidebarOpen(false)}
+                />
+            )}
+
+            {/* 드로어 사이드바만 존재 (PC/모바일 공통) */}
+            <aside className={`drawerSidebar ${sidebarOpen ? 'open' : ''}`}>
+                <Sidebar onNavigate={() => setSidebarOpen(false)} />
+            </aside>
+
+            {/* 메인 콘텐츠 - 전체 화면 사용 */}
             <main className="layout-main">
                 <Outlet />
             </main>
+
             <MobileBottomNav />
 
             {authModal && (
@@ -32,6 +50,6 @@ export default function Layout() {
                     onClose={() => setAuthModal(null)}
                 />
             )}
-        </>
+        </div>
     );
 }

@@ -1,10 +1,10 @@
 import "./style/Header.css";
-import { NavLink } from "react-router-dom";
+import { NavLink, Link } from "react-router-dom";
 
 type NavItem = {
     label: string;
-    to: string;           // ✅ href -> to
-    external?: boolean;   // ✅ 외부 링크/해시용 (선택)
+    to: string;
+    external?: boolean;
 };
 
 type HeaderProps = {
@@ -12,9 +12,8 @@ type HeaderProps = {
     navItems?: NavItem[];
     onLoginClick?: () => void;
     onSignupClick?: () => void;
-
-    /** 모바일 햄버거 버튼 쓸거면 연결 */
     onMenuClick?: () => void;
+    showMenuButton?: boolean;
 };
 
 function isExternalLink(to: string) {
@@ -22,18 +21,36 @@ function isExternalLink(to: string) {
 }
 
 export default function Header({
-                                   logoText = "Logo",
-                                   navItems = [],
-                                   onLoginClick,
-                                   onSignupClick,
-                                   onMenuClick,
-                               }: HeaderProps) {
+    logoText = "Logo",
+    navItems = [],
+    onLoginClick,
+    onSignupClick,
+    onMenuClick,
+    showMenuButton = true,
+}: HeaderProps) {
     return (
         <header className="appHeader">
             <div className="appContainer appHeaderInner">
                 <div className="appBrand">
-                    <div className="appLogoMark" aria-hidden="true" />
-                    <span className="appLogoText">{logoText}</span>
+                    {/* 로고를 Link로 감싸서 홈으로 이동 */}
+                    <Link to="/" className="appBrandLink">
+                        <div className="appLogoMark" aria-hidden="true" />
+                        <span className="appLogoText">{logoText}</span>
+                    </Link>
+                    
+                    {/* 사이드바 토글 버튼 */}
+                    {showMenuButton && (
+                        <button
+                            className="appSidebarToggle"
+                            type="button"
+                            aria-label="사이드바 열기"
+                            onClick={onMenuClick}
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                                <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
+                        </button>
+                    )}
                 </div>
 
                 <nav className="appNav" aria-label="메인 메뉴">
@@ -53,7 +70,7 @@ export default function Header({
                                 key={item.label}
                                 className="appNavLink"
                                 to={item.to}
-                                end   // 정확히 일치할 때만 active (prefix 오탐 방지)
+                                end
                             >
                                 {item.label}
                             </NavLink>
@@ -62,6 +79,7 @@ export default function Header({
                 </nav>
 
                 <div className="appHeaderActions">
+                    {/* 모바일용 햄버거 버튼 */}
                     <button
                         className="appIconBtn appOnlyMobile"
                         type="button"
