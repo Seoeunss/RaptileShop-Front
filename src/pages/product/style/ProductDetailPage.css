@@ -1,125 +1,262 @@
-/* =========================
-   상품 상세 전체
-========================= */
-
+/* ── 전체 ─────────────────────────────────────── */
 .product-detail {
     width: 100%;
     max-width: 1100px;
     margin: 0 auto;
     padding: 32px 16px;
+    color: #f9fafb;
 }
 
-/* =========================
-   이미지 + 정보 레이아웃
-========================= */
+/* ── 뒤로가기 ─────────────────────────────────── */
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 28px;
+    background: none;
+    border: none;
+    color: #9ca3af;
+    font-size: 14px;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 0;
+}
+.back-btn:hover { color: #f9fafb; }
 
+/* ── 본문 레이아웃 ────────────────────────────── */
 .product-detail-body {
     display: flex;
     gap: 48px;
     align-items: flex-start;
 }
 
-/* =========================
-   이미지 영역 (PC 기준 고정)
-========================= */
-
-.product-detail-image-wrapper {
-    flex: 0 0 480px;
-    max-width: 480px;
+/* ── 이미지 영역 ──────────────────────────────── */
+.product-detail-image-area {
+    flex: 0 0 460px;
+    max-width: 460px;
 }
 
-/* 이미지 */
-.product-detail-image {
+.product-detail-main-img {
     width: 100%;
     aspect-ratio: 4 / 5;
-    object-fit: cover;          /* ⭐ 꽉 차게 */
+    object-fit: cover;
     border-radius: 16px;
     display: block;
+    background: #1f2937;
 }
 
-/* =========================
-   정보 영역
-========================= */
+.product-detail-img-placeholder {
+    width: 100%;
+    aspect-ratio: 4 / 5;
+    border-radius: 16px;
+    background: #1f2937;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 72px;
+    opacity: 0.4;
+}
 
+/* 썸네일 목록 */
+.product-detail-thumbs {
+    display: flex;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+}
+.product-detail-thumb {
+    width: 72px;
+    height: 72px;
+    border-radius: 8px;
+    object-fit: cover;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: border-color 0.2s;
+}
+.product-detail-thumb:hover,
+.product-detail-thumb.active { border-color: #10b981; }
+
+/* ── 정보 영역 ────────────────────────────────── */
 .product-detail-info {
     flex: 1;
-    max-width: 420px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0;
 }
 
-.product-detail-info h1 {
+.detail-status-badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    margin-bottom: 12px;
+}
+
+.detail-title {
     font-size: 22px;
     font-weight: 700;
-    line-height: 1.3;
+    line-height: 1.4;
+    color: #f9fafb;
+    margin: 0 0 8px;
 }
 
-.product-detail-info .price {
-    font-size: 20px;
-    font-weight: 700;
+.detail-price {
+    font-size: 24px;
+    font-weight: 800;
+    color: #10b981;
+    margin: 0 0 4px;
+}
+.detail-price-sub {
+    font-size: 13px;
+    color: #34d399;
+    margin: 0 0 20px;
 }
 
-.product-detail-info .description {
+/* 구분선 */
+.detail-divider {
+    border: none;
+    border-top: 1px solid #1f2937;
+    margin: 16px 0;
+}
+
+/* 메타 정보 테이블 */
+.detail-meta-table {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 10px 16px;
     font-size: 14px;
-    line-height: 1.6;
-    color: #555;
+    margin-bottom: 20px;
+}
+.detail-meta-label {
+    color: #6b7280;
+    font-weight: 500;
+}
+.detail-meta-value {
+    color: #e5e7eb;
+    font-weight: 400;
 }
 
-/* 구매 버튼 */
-.product-detail-info .buy-btn {
-    margin-top: 24px;
+/* 모프 태그 */
+.detail-morph-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.morph-tag {
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: #10b98122;
+    color: #34d399;
+    border: 1px solid #10b98144;
+}
+
+/* 설명 */
+.detail-description-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #9ca3af;
+    margin: 0 0 8px;
+}
+.detail-description {
+    font-size: 14px;
+    line-height: 1.7;
+    color: #d1d5db;
+    white-space: pre-wrap;
+    margin: 0 0 24px;
+}
+
+/* 판매자 정보 */
+.detail-seller {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px;
+    background: #1f2937;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+.detail-seller-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #374151;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+.detail-seller-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+.detail-seller-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #f9fafb;
+}
+.detail-seller-region {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 2px;
+}
+
+/* 버튼 영역 */
+.detail-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.inquiry-btn {
     width: 100%;
     padding: 14px;
-    border-radius: 14px;
-    background: #000;
+    border-radius: 12px;
+    background: #10b981;
     color: #fff;
     font-size: 16px;
-    font-weight: 600;
+    font-weight: 700;
     border: none;
     cursor: pointer;
+    transition: background 0.2s;
+}
+.inquiry-btn:hover    { background: #059669; }
+.inquiry-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.detail-view-count {
+    font-size: 12px;
+    color: #6b7280;
+    text-align: center;
 }
 
-/* =========================
-   뒤로가기
-========================= */
-
-.back-btn {
-    margin-bottom: 24px;
-    background: none;
-    border: none;
-    font-size: 14px;
-    cursor: pointer;
+/* ── 로딩 / 에러 ─────────────────────────────── */
+.detail-loading,
+.detail-error {
+    text-align: center;
+    padding: 80px 20px;
+    color: #6b7280;
+    font-size: 15px;
 }
+.detail-error { color: #ef4444; }
 
-/* =========================
-   모바일 대응
-========================= */
-
+/* ── 모바일 ──────────────────────────────────── */
 @media (max-width: 768px) {
-    .product-detail {
-        padding: 24px 16px;
-    }
+    .product-detail { padding: 20px 16px; }
 
     .product-detail-body {
         flex-direction: column;
         gap: 24px;
     }
 
-    .product-detail-image-wrapper {
+    .product-detail-image-area {
         max-width: 100%;
         flex: none;
+        width: 100%;
     }
 
-    .product-detail-info {
-        max-width: 100%;
-    }
-
-    .product-detail-info h1 {
-        font-size: 18px;
-    }
-
-    .product-detail-info .price {
-        font-size: 18px;
-    }
+    .detail-title  { font-size: 18px; }
+    .detail-price  { font-size: 20px; }
 }
