@@ -1,6 +1,6 @@
 import api from '../lib/api';
 
-export interface SignupData { email: string; password: string; nickname: string; }
+export interface SignupData { email: string; password: string; nickname: string; phone?: string; carrier?: string; }
 export interface LoginData  { email: string; password: string; }
 
 export const authApi = {

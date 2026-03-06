@@ -16,6 +16,15 @@ function getPasswordStrength(pw: string): 0 | 1 | 2 | 3 {
 const strengthLabel = (s: number) => ['', '약함', '보통', '강함'][s] ?? '';
 const strengthColor = (s: number) => ['', '#ef4444', '#f59e0b', '#10b981'][s] ?? '';
 
+function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, '').slice(0, 11);
+  if (digits.length <= 3) return digits;
+  if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+}
+
+const CARRIERS = ['SKT', 'KT', 'LG U+'] as const;
+
 export default function SignupPage() {
   const navigate = useNavigate();
   const setAuth  = useAuthStore((s) => s.setAuth);
@@ -24,11 +33,17 @@ export default function SignupPage() {
   const [email,    setEmail]                  = useState('');
   const [password, setPassword]               = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [carrier,  setCarrier]                = useState<string>('SKT');
+  const [phone,    setPhone]                  = useState('');
   const [agreeAll,     setAgreeAll]     = useState(false);
   const [agreeTerms,   setAgreeTerms]   = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const [error,   setError]   = useState('');
   const [loading, setLoading] = useState(false);
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPhone(formatPhone(e.target.value));
+  };
 
   const pwStrength = getPasswordStrength(password);
   const isPasswordMismatch = passwordConfirm.length > 0 && password !== passwordConfirm;
@@ -44,11 +59,13 @@ export default function SignupPage() {
     if (!email)                       { setError('이메일을 입력해주세요.'); return; }
     if (password.length < 8)          { setError('비밀번호는 8자 이상이어야 합니다.'); return; }
     if (password !== passwordConfirm) { setError('비밀번호가 일치하지 않습니다.'); return; }
+    const rawPhone = phone.replace(/-/g, '');
+    if (rawPhone.length < 10)             { setError('휴대폰 번호를 올바르게 입력해주세요.'); return; }
     if (!agreeTerms || !agreePrivacy) { setError('필수 약관에 동의해주세요.'); return; }
 
     setLoading(true);
     try {
-      const data  = await authApi.signup({ email, password, nickname });
+      const data  = await authApi.signup({ email, password, nickname, phone, carrier });
       const token = data.accessToken as string;
       localStorage.setItem('accessToken', token);
       const me = await authApi.me();
@@ -115,6 +132,31 @@ export default function SignupPage() {
             {!isPasswordMismatch && passwordConfirm.length > 0 && password === passwordConfirm && (
               <p className="password-hint" style={{ color: '#10b981' }}>비밀번호가 일치합니다.</p>
             )}
+          </div>
+
+          <div className="form-group">
+            <label className="form-label" htmlFor="signup-phone">휴대폰 번호</label>
+            <div className="phone-row">
+              <select
+                className="form-select carrier-select"
+                value={carrier}
+                onChange={(e) => setCarrier(e.target.value)}
+                aria-label="통신사 선택"
+              >
+                {CARRIERS.map((c) => (
+                  <option key={c} value={c}>{c}</option>
+                ))}
+              </select>
+              <input
+                id="signup-phone"
+                className="form-input"
+                type="tel"
+                placeholder="010-0000-0000"
+                value={phone}
+                onChange={handlePhoneChange}
+                inputMode="numeric"
+              />
+            </div>
           </div>
 
           <div className="terms-group">
