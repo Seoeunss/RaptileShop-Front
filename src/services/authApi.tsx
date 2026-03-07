@@ -12,4 +12,10 @@ export const authApi = {
 
   me: () =>
     api.get('/auth/me').then((r) => r.data.data),
+
+  sendSmsCode: (phone: string, carrier: string) =>
+    api.post('/auth/sms/send', { phone, carrier }).then((r) => r.data.data),
+
+  verifySmsCode: (phone: string, code: string) =>
+    api.post('/auth/sms/verify', { phone, code }).then((r) => r.data.data),
 };

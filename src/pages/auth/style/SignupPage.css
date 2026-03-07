@@ -52,6 +52,60 @@
     align-items: center;
 }
 
+.send-verify-btn {
+    flex: 0 0 auto;
+    height: 44px;
+    padding: 0 14px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+}
+
+.send-verify-btn:hover {
+    background: var(--primaryHover);
+}
+
+.send-verify-btn:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+}
+
+.verify-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.verify-timer {
+    font-size: 13px;
+    color: #ef4444;
+    font-weight: 600;
+    min-width: 42px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.phone-verified-badge {
+    margin-top: 8px;
+    font-size: 13px;
+    color: #10b981;
+    font-weight: 700;
+}
+
+.verify-error {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #ef4444;
+}
+
 .carrier-select {
     flex: 0 0 100px;
     height: 44px;
