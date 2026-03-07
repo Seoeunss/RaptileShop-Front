@@ -216,6 +216,107 @@
     text-decoration: underline;
 }
 
+/* Phone verification */
+
+.modal-phone-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.modal-carrier-select {
+    flex: 0 0 80px;
+    height: 42px;
+    padding: 0 8px;
+    border: 1.5px solid var(--line, rgba(15,23,42,0.08));
+    border-radius: 11px;
+    background: var(--bg, #fff);
+    color: var(--text, #0f172a);
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%2394a3b8' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    padding-right: 22px;
+    outline: none;
+    transition: border-color 0.15s ease;
+}
+
+.modal-carrier-select:focus {
+    border-color: var(--primary, #12b3a6);
+}
+
+.modal-carrier-select:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.modal-phone-row .modal-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.modal-verify-btn {
+    flex: 0 0 auto;
+    height: 42px;
+    padding: 0 12px;
+    background: var(--primary, #12b3a6);
+    color: #fff;
+    border: none;
+    border-radius: 11px;
+    font-size: 12px;
+    font-weight: 700;
+    font-family: inherit;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+}
+
+.modal-verify-btn:hover {
+    background: var(--primaryHover, #0fa79b);
+}
+
+.modal-verify-btn:disabled {
+    background: #94a3b8;
+    cursor: not-allowed;
+}
+
+.modal-verify-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-top: 6px;
+}
+
+.modal-verify-row .modal-input {
+    flex: 1;
+    min-width: 0;
+}
+
+.modal-verify-timer {
+    font-size: 12px;
+    color: #ef4444;
+    font-weight: 600;
+    min-width: 38px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.modal-phone-verified {
+    margin-top: 6px;
+    font-size: 13px;
+    color: #10b981;
+    font-weight: 700;
+}
+
+.modal-verify-error {
+    margin-top: 4px;
+    font-size: 12px;
+    color: #ef4444;
+}
+
 /* Password strength */
 
 .modal-strength-bars {
