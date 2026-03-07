@@ -3,6 +3,20 @@
 @tailwind utilities;
 
 :root {
+  /* Design tokens - 전역 CSS 변수 */
+  --bg: #ffffff;
+  --tint: #eaf6f3;
+  --text: #0f172a;
+  --muted: #475569;
+  --line: rgba(15, 23, 42, 0.08);
+  --card: #ffffff;
+  --shadow: 0 12px 30px rgba(2, 6, 23, 0.08);
+  --radius: 18px;
+
+  --primary: #12b3a6;
+  --primaryHover: #0fa79b;
+  --primaryText: #ffffff;
+
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
