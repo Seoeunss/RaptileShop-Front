@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authApi } from '../../services/authApi';
 import { useAuthStore } from '../../store/authStore';
@@ -25,6 +25,14 @@ function formatPhone(value: string): string {
 
 const CARRIERS = ['SKT', 'KT', 'LG U+'] as const;
 
+const SMS_TIMEOUT = 180; // 3분
+
+function formatTimer(sec: number) {
+  const m = Math.floor(sec / 60).toString().padStart(2, '0');
+  const s = (sec % 60).toString().padStart(2, '0');
+  return `${m}:${s}`;
+}
+
 export default function SignupPage() {
   const navigate = useNavigate();
   const setAuth  = useAuthStore((s) => s.setAuth);
@@ -41,8 +49,30 @@ export default function SignupPage() {
   const [error,   setError]   = useState('');
   const [loading, setLoading] = useState(false);
 
+  // 휴대폰 인증 관련 상태
+  const [verificationSent,  setVerificationSent]  = useState(false);
+  const [verificationCode,  setVerificationCode]  = useState('');
+  const [isPhoneVerified,   setIsPhoneVerified]   = useState(false);
+  const [timer,             setTimer]             = useState(0);
+  const [isSendingCode,     setIsSendingCode]     = useState(false);
+  const [isVerifying,       setIsVerifying]       = useState(false);
+  const [verifyError,       setVerifyError]       = useState('');
+
+  // 타이머 카운트다운
+  useEffect(() => {
+    if (timer <= 0) return;
+    const id = setInterval(() => setTimer((t) => t - 1), 1000);
+    return () => clearInterval(id);
+  }, [timer]);
+
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPhone(formatPhone(e.target.value));
+    // 번호 변경 시 인증 초기화
+    setVerificationSent(false);
+    setIsPhoneVerified(false);
+    setVerificationCode('');
+    setVerifyError('');
+    setTimer(0);
   };
 
   const pwStrength = getPasswordStrength(password);
@@ -50,6 +80,40 @@ export default function SignupPage() {
 
   const handleAgreeAll = (checked: boolean) => {
     setAgreeAll(checked); setAgreeTerms(checked); setAgreePrivacy(checked);
+  };
+
+  const handleSendVerification = async () => {
+    const rawPhone = phone.replace(/-/g, '');
+    if (rawPhone.length < 10) { setVerifyError('휴대폰 번호를 올바르게 입력해주세요.'); return; }
+    setVerifyError('');
+    setIsSendingCode(true);
+    try {
+      await authApi.sendSmsCode(rawPhone, carrier);
+      setVerificationSent(true);
+      setVerificationCode('');
+      setIsPhoneVerified(false);
+      setTimer(SMS_TIMEOUT);
+    } catch {
+      setVerifyError('인증번호 발송에 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setIsSendingCode(false);
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    if (verificationCode.length !== 6) { setVerifyError('인증번호 6자리를 입력해주세요.'); return; }
+    if (timer <= 0) { setVerifyError('인증 시간이 만료되었습니다. 재발송 후 다시 시도해주세요.'); return; }
+    setVerifyError('');
+    setIsVerifying(true);
+    try {
+      await authApi.verifySmsCode(phone.replace(/-/g, ''), verificationCode);
+      setIsPhoneVerified(true);
+      setTimer(0);
+    } catch {
+      setVerifyError('인증번호가 올바르지 않습니다.');
+    } finally {
+      setIsVerifying(false);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -61,6 +125,7 @@ export default function SignupPage() {
     if (password !== passwordConfirm) { setError('비밀번호가 일치하지 않습니다.'); return; }
     const rawPhone = phone.replace(/-/g, '');
     if (rawPhone.length < 10)             { setError('휴대폰 번호를 올바르게 입력해주세요.'); return; }
+    if (!isPhoneVerified)             { setError('휴대폰 본인인증을 완료해주세요.'); return; }
     if (!agreeTerms || !agreePrivacy) { setError('필수 약관에 동의해주세요.'); return; }
 
     setLoading(true);
@@ -140,8 +205,16 @@ export default function SignupPage() {
               <select
                 className="form-select carrier-select"
                 value={carrier}
-                onChange={(e) => setCarrier(e.target.value)}
+                onChange={(e) => {
+                  setCarrier(e.target.value);
+                  setVerificationSent(false);
+                  setIsPhoneVerified(false);
+                  setVerificationCode('');
+                  setVerifyError('');
+                  setTimer(0);
+                }}
                 aria-label="통신사 선택"
+                disabled={isPhoneVerified}
               >
                 {CARRIERS.map((c) => (
                   <option key={c} value={c}>{c}</option>
@@ -155,8 +228,46 @@ export default function SignupPage() {
                 value={phone}
                 onChange={handlePhoneChange}
                 inputMode="numeric"
+                disabled={isPhoneVerified}
               />
+              <button
+                type="button"
+                className="send-verify-btn"
+                onClick={handleSendVerification}
+                disabled={isSendingCode || isPhoneVerified || phone.replace(/-/g, '').length < 10}
+              >
+                {isSendingCode ? '발송 중...' : verificationSent ? '재발송' : '인증요청'}
+              </button>
             </div>
+
+            {isPhoneVerified ? (
+              <p className="phone-verified-badge">&#10003; 인증완료</p>
+            ) : verificationSent && (
+              <div className="verify-row">
+                <input
+                  className="form-input"
+                  type="text"
+                  placeholder="인증번호 6자리"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  inputMode="numeric"
+                  maxLength={6}
+                />
+                {timer > 0 && (
+                  <span className="verify-timer">{formatTimer(timer)}</span>
+                )}
+                <button
+                  type="button"
+                  className="send-verify-btn"
+                  onClick={handleVerifyCode}
+                  disabled={isVerifying || verificationCode.length !== 6 || timer <= 0}
+                >
+                  {isVerifying ? '확인 중...' : '인증확인'}
+                </button>
+              </div>
+            )}
+
+            {verifyError && <p className="verify-error">{verifyError}</p>}
           </div>
 
           <div className="terms-group">
