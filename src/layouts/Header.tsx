@@ -1,5 +1,38 @@
+import { useEffect } from "react";
 import "./style/Header.css";
 import { NavLink, Link } from "react-router-dom";
+
+// 고객문의 버튼 및 appBtn link 호환 스타일 동적 주입
+const headerExtraStyles = `
+.appBtn {
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+.appBtnSupport {
+    background: transparent;
+    border: 1.5px solid #d1d5db !important;
+    color: #6b7280 !important;
+    font-size: 13px;
+    padding: 8px 13px;
+    transition: all 0.2s ease;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+.appBtnSupport:hover {
+    border-color: #10b981 !important;
+    background: #f0fdf4 !important;
+    color: #059669 !important;
+}
+.appOnlyPC { display: inline-flex; }
+@media (max-width: 720px) {
+    .appOnlyPC { display: none !important; }
+}
+`;
 
 type NavItem = {
     label: string;
@@ -28,17 +61,26 @@ export default function Header({
     onMenuClick,
     showMenuButton = true,
 }: HeaderProps) {
+    useEffect(() => {
+        const style = document.createElement("style");
+        style.id = "header-extra-styles";
+        style.textContent = headerExtraStyles;
+        document.head.appendChild(style);
+        return () => {
+            const el = document.getElementById("header-extra-styles");
+            if (el) el.remove();
+        };
+    }, []);
+
     return (
         <header className="appHeader">
             <div className="appContainer appHeaderInner">
                 <div className="appBrand">
-                    {/* 로고를 Link로 감싸서 홈으로 이동 */}
                     <Link to="/" className="appBrandLink">
                         <div className="appLogoMark" aria-hidden="true" />
                         <span className="appLogoText">{logoText}</span>
                     </Link>
                     
-                    {/* 사이드바 토글 버튼 */}
                     {showMenuButton && (
                         <button
                             className="appSidebarToggle"
@@ -56,7 +98,6 @@ export default function Header({
                 <nav className="appNav" aria-label="메인 메뉴">
                     {navItems.map((item) => {
                         const external = item.external || isExternalLink(item.to);
-
                         if (external) {
                             return (
                                 <a key={item.label} className="appNavLink" href={item.to}>
@@ -64,14 +105,8 @@ export default function Header({
                                 </a>
                             );
                         }
-
                         return (
-                            <NavLink
-                                key={item.label}
-                                className="appNavLink"
-                                to={item.to}
-                                end
-                            >
+                            <NavLink key={item.label} className="appNavLink" to={item.to} end>
                                 {item.label}
                             </NavLink>
                         );
@@ -90,6 +125,11 @@ export default function Header({
                             <path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
                         </svg>
                     </button>
+
+                    {/* 고객문의 버튼 (로그인 버튼 왼쪽) */}
+                    <Link to="/support" className="appBtnSupport appOnlyPC">
+                        고객문의
+                    </Link>
 
                     <button className="appBtn appBtnGhost" onClick={onLoginClick}>
                         로그인

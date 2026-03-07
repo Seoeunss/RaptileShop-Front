@@ -74,6 +74,9 @@
     font-weight: 700;
     font-size: 14px;
     cursor: pointer;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
 }
 
 .appBtnPrimary {
@@ -95,6 +98,20 @@
     color: var(--primary, #12b3a6);
 }
 
+/* 고객문의 버튼 */
+.appBtnSupport {
+    background: transparent;
+    border: 1.5px solid #d1d5db;
+    color: #6b7280;
+    font-size: 13px;
+    padding: 8px 13px;
+}
+.appBtnSupport:hover {
+    border-color: #10b981;
+    background: #f0fdf4;
+    color: #059669;
+}
+
 .appIconBtn {
     border: 1px solid var(--line, rgba(15, 23, 42, 0.08));
     background: #fff;
@@ -110,6 +127,10 @@
     display: none;
 }
 
+.appOnlyPC {
+    display: inline-flex;
+}
+
 @media (max-width: 720px) {
     .appNav {
         display: none;
@@ -117,9 +138,10 @@
     .appOnlyMobile {
         display: inline-grid;
     }
+    .appOnlyPC {
+        display: none;
+    }
 }
-
-/* 기존 스타일들... */
 
 /* 로고 링크 스타일 */
 .appBrandLink {
