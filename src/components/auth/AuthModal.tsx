@@ -1,7 +1,24 @@
 import { useState, useEffect, useRef } from 'react';
 import './AuthModal.css';
+import { authApi } from '../../services/authApi';
 
 type Tab = 'login' | 'signup';
+
+const CARRIERS = ['SKT', 'KT', 'LG U+'] as const;
+const SMS_TIMEOUT = 180;
+
+function formatPhone(value: string): string {
+    const digits = value.replace(/\D/g, '').slice(0, 11);
+    if (digits.length <= 3) return digits;
+    if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+    return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+}
+
+function formatTimer(sec: number) {
+    const m = Math.floor(sec / 60).toString().padStart(2, '0');
+    const s = (sec % 60).toString().padStart(2, '0');
+    return `${m}:${s}`;
+}
 
 type Props = {
     initialTab?: Tab;
@@ -92,14 +109,78 @@ function LoginForm({ onSwitchTab }: { onSwitchTab: () => void }) {
 
 /* ───────── 회원가입 폼 ───────── */
 function SignupForm({ onSwitchTab }: { onSwitchTab: () => void }) {
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [pwConfirm, setPwConfirm] = useState('');
-    const [agreeAll, setAgreeAll] = useState(false);
-    const [agreeTerms, setAgreeTerms] = useState(false);
+    const [name,       setName]       = useState('');
+    const [email,      setEmail]      = useState('');
+    const [password,   setPassword]   = useState('');
+    const [pwConfirm,  setPwConfirm]  = useState('');
+    const [carrier,    setCarrier]    = useState<string>('SKT');
+    const [phone,      setPhone]      = useState('');
+    const [agreeAll,     setAgreeAll]     = useState(false);
+    const [agreeTerms,   setAgreeTerms]   = useState(false);
     const [agreePrivacy, setAgreePrivacy] = useState(false);
-    const [error, setError] = useState('');
+    const [error,      setError]      = useState('');
+
+    // 휴대폰 인증 상태
+    const [verificationSent, setVerificationSent] = useState(false);
+    const [verificationCode, setVerificationCode] = useState('');
+    const [isPhoneVerified,  setIsPhoneVerified]  = useState(false);
+    const [timer,            setTimer]            = useState(0);
+    const [isSendingCode,    setIsSendingCode]    = useState(false);
+    const [isVerifying,      setIsVerifying]      = useState(false);
+    const [verifyError,      setVerifyError]      = useState('');
+
+    useEffect(() => {
+        if (timer <= 0) return;
+        const id = setInterval(() => setTimer((t) => t - 1), 1000);
+        return () => clearInterval(id);
+    }, [timer]);
+
+    const resetVerification = () => {
+        setVerificationSent(false);
+        setIsPhoneVerified(false);
+        setVerificationCode('');
+        setVerifyError('');
+        setTimer(0);
+    };
+
+    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setPhone(formatPhone(e.target.value));
+        resetVerification();
+    };
+
+    const handleSendVerification = async () => {
+        const rawPhone = phone.replace(/-/g, '');
+        if (rawPhone.length < 10) { setVerifyError('휴대폰 번호를 올바르게 입력해주세요.'); return; }
+        setVerifyError('');
+        setIsSendingCode(true);
+        try {
+            await authApi.sendSmsCode(rawPhone, carrier);
+            setVerificationSent(true);
+            setVerificationCode('');
+            setIsPhoneVerified(false);
+            setTimer(SMS_TIMEOUT);
+        } catch {
+            setVerifyError('인증번호 발송에 실패했습니다. 다시 시도해주세요.');
+        } finally {
+            setIsSendingCode(false);
+        }
+    };
+
+    const handleVerifyCode = async () => {
+        if (verificationCode.length !== 6) { setVerifyError('인증번호 6자리를 입력해주세요.'); return; }
+        if (timer <= 0) { setVerifyError('인증 시간이 만료되었습니다. 재발송 후 다시 시도해주세요.'); return; }
+        setVerifyError('');
+        setIsVerifying(true);
+        try {
+            await authApi.verifySmsCode(phone.replace(/-/g, ''), verificationCode);
+            setIsPhoneVerified(true);
+            setTimer(0);
+        } catch {
+            setVerifyError('인증번호가 올바르지 않습니다.');
+        } finally {
+            setIsVerifying(false);
+        }
+    };
 
     const pwStrength = getPwStrength(password);
     const st = strengthText(pwStrength);
@@ -119,11 +200,12 @@ function SignupForm({ onSwitchTab }: { onSwitchTab: () => void }) {
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        if (!name.trim())              { setError('이름을 입력해주세요.'); return; }
-        if (!email)                    { setError('이메일을 입력해주세요.'); return; }
-        if (password.length < 8)       { setError('비밀번호는 8자 이상이어야 합니다.'); return; }
-        if (password !== pwConfirm)    { setError('비밀번호가 일치하지 않습니다.'); return; }
-        if (!agreeTerms || !agreePrivacy) { setError('필수 약관에 동의해주세요.'); return; }
+        if (!name.trim())                  { setError('이름을 입력해주세요.'); return; }
+        if (!email)                        { setError('이메일을 입력해주세요.'); return; }
+        if (password.length < 8)           { setError('비밀번호는 8자 이상이어야 합니다.'); return; }
+        if (password !== pwConfirm)        { setError('비밀번호가 일치하지 않습니다.'); return; }
+        if (!isPhoneVerified)              { setError('휴대폰 본인인증을 완료해주세요.'); return; }
+        if (!agreeTerms || !agreePrivacy)  { setError('필수 약관에 동의해주세요.'); return; }
         // TODO: 실제 회원가입 API 연동
         alert('회원가입 성공 (mock)');
     };
@@ -195,6 +277,67 @@ function SignupForm({ onSwitchTab }: { onSwitchTab: () => void }) {
                 />
                 {pwMismatch && <span className="modal-input-hint" style={{ color: '#ef4444' }}>비밀번호가 일치하지 않습니다.</span>}
                 {pwMatch    && <span className="modal-input-hint" style={{ color: '#10b981' }}>비밀번호가 일치합니다.</span>}
+            </div>
+
+            {/* 휴대폰 인증 */}
+            <div className="modal-form-group">
+                <label className="modal-label" htmlFor="m-phone">휴대폰 번호</label>
+                <div className="modal-phone-row">
+                    <select
+                        className="modal-carrier-select"
+                        value={carrier}
+                        onChange={(e) => { setCarrier(e.target.value); resetVerification(); }}
+                        aria-label="통신사 선택"
+                        disabled={isPhoneVerified}
+                    >
+                        {CARRIERS.map((c) => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                    <input
+                        id="m-phone"
+                        className="modal-input"
+                        type="tel"
+                        placeholder="010-0000-0000"
+                        value={phone}
+                        onChange={handlePhoneChange}
+                        inputMode="numeric"
+                        disabled={isPhoneVerified}
+                    />
+                    <button
+                        type="button"
+                        className="modal-verify-btn"
+                        onClick={handleSendVerification}
+                        disabled={isSendingCode || isPhoneVerified || phone.replace(/-/g, '').length < 10}
+                    >
+                        {isSendingCode ? '발송 중...' : verificationSent ? '재발송' : '인증요청'}
+                    </button>
+                </div>
+
+                {isPhoneVerified ? (
+                    <p className="modal-phone-verified">&#10003; 인증완료</p>
+                ) : verificationSent && (
+                    <div className="modal-verify-row">
+                        <input
+                            className="modal-input"
+                            type="text"
+                            placeholder="인증번호 6자리"
+                            value={verificationCode}
+                            onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                            inputMode="numeric"
+                            maxLength={6}
+                        />
+                        {timer > 0 && <span className="modal-verify-timer">{formatTimer(timer)}</span>}
+                        <button
+                            type="button"
+                            className="modal-verify-btn"
+                            onClick={handleVerifyCode}
+                            disabled={isVerifying || verificationCode.length !== 6 || timer <= 0}
+                        >
+                            {isVerifying ? '확인 중...' : '인증확인'}
+                        </button>
+                    </div>
+                )}
+
+                {verifyError && <p className="modal-verify-error">{verifyError}</p>}
             </div>
 
             <div className="modal-terms-box">
