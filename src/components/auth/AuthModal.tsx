@@ -1,18 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './AuthModal.css';
 import { authApi } from '../../services/authApi';
+import { useAuthStore } from '../../store/authStore';
 
 type Tab = 'login' | 'signup';
 
-const CARRIERS = ['SKT', 'KT', 'LG U+'] as const;
-const SMS_TIMEOUT = 180;
+// const CARRIERS = ['SKT', 'KT', 'LG U+'] as const;
+// const SMS_TIMEOUT = 180;
+const EMAIL_TIMEOUT = 180;
 
-function formatPhone(value: string): string {
-    const digits = value.replace(/\D/g, '').slice(0, 11);
-    if (digits.length <= 3) return digits;
-    if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
-    return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
-}
+// function formatPhone(value: string): string {
+//     const digits = value.replace(/\D/g, '').slice(0, 11);
+//     if (digits.length <= 3) return digits;
+//     if (digits.length <= 7) return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+//     return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+// }
 
 function formatTimer(sec: number) {
     const m = Math.floor(sec / 60).toString().padStart(2, '0');
@@ -48,17 +51,37 @@ function strengthText(s: number) {
 }
 
 /* ───────── 로그인 폼 ───────── */
-function LoginForm({ onSwitchTab }: { onSwitchTab: () => void }) {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
+function LoginForm({ onSwitchTab, onClose }: { onSwitchTab: () => void; onClose: () => void }) {
+    const navigate  = useNavigate();
+    const setAuth   = useAuthStore((s) => s.setAuth);
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const [email,    setEmail]    = useState('');
+    const [password, setPassword] = useState('');
+    const [error,    setError]    = useState('');
+    const [loading,  setLoading]  = useState(false);
+
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         if (!email || !password) { setError('이메일과 비밀번호를 모두 입력해주세요.'); return; }
-        // TODO: 실제 로그인 API 연동
-        alert('로그인 성공 (mock)');
+        setLoading(true);
+        try {
+            const data  = await authApi.login({ email, password });
+            const token = data.accessToken as string;
+            const me    = await authApi.me(token);
+            setAuth(me, token);
+            onClose();
+            navigate('/');
+        } catch (err: unknown) {
+            const code = (err as any)?.response?.data?.error?.code;
+            setError(
+                code === 'USER_NOT_FOUND' || code === 'INVALID_PASSWORD'
+                    ? '이메일 또는 비밀번호가 올바르지 않습니다.'
+                    : '로그인 중 오류가 발생했습니다.'
+            );
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -95,7 +118,9 @@ function LoginForm({ onSwitchTab }: { onSwitchTab: () => void }) {
 
             {error && <p className="modal-error">{error}</p>}
 
-            <button type="submit" className="modal-submit-btn">로그인</button>
+            <button type="submit" className="modal-submit-btn" disabled={loading}>
+                {loading ? '로그인 중...' : '로그인'}
+            </button>
 
             <p className="modal-switch">
                 계정이 없으신가요?{' '}
@@ -108,79 +133,175 @@ function LoginForm({ onSwitchTab }: { onSwitchTab: () => void }) {
 }
 
 /* ───────── 회원가입 폼 ───────── */
-function SignupForm({ onSwitchTab }: { onSwitchTab: () => void }) {
+function SignupForm({ onSwitchTab, onClose }: { onSwitchTab: () => void; onClose: () => void }) {
+    const navigate  = useNavigate();
+    const setAuth   = useAuthStore((s) => s.setAuth);
+
     const [name,       setName]       = useState('');
     const [email,      setEmail]      = useState('');
     const [password,   setPassword]   = useState('');
     const [pwConfirm,  setPwConfirm]  = useState('');
-    const [carrier,    setCarrier]    = useState<string>('SKT');
-    const [phone,      setPhone]      = useState('');
+    // const [carrier,    setCarrier]    = useState<string>('SKT');
+    // const [phone,      setPhone]      = useState('');
     const [agreeAll,     setAgreeAll]     = useState(false);
     const [agreeTerms,   setAgreeTerms]   = useState(false);
     const [agreePrivacy, setAgreePrivacy] = useState(false);
     const [error,      setError]      = useState('');
+    const [loading,    setLoading]    = useState(false);
 
-    // 휴대폰 인증 상태
-    const [verificationSent, setVerificationSent] = useState(false);
-    const [verificationCode, setVerificationCode] = useState('');
-    const [isPhoneVerified,  setIsPhoneVerified]  = useState(false);
-    const [timer,            setTimer]            = useState(0);
-    const [isSendingCode,    setIsSendingCode]    = useState(false);
-    const [isVerifying,      setIsVerifying]      = useState(false);
-    const [verifyError,      setVerifyError]      = useState('');
+    // ── 이메일 인증 상태 ──
+    const [emailVerificationSent,  setEmailVerificationSent]  = useState(false);
+    const [emailVerificationCode,  setEmailVerificationCode]  = useState('');
+    const [isEmailVerified,        setIsEmailVerified]        = useState(false);
+    const [isSendingEmailCode,     setIsSendingEmailCode]     = useState(false);
+    const [isVerifyingEmail,       setIsVerifyingEmail]       = useState(false);
+    const [emailVerifyError,       setEmailVerifyError]       = useState('');
+    const [emailTimer,             setEmailTimer]             = useState(0);
+    const [emailVerifyAlert,       setEmailVerifyAlert]       = useState(false);
+
+    // // ── 휴대폰 인증 상태 ──
+    // const [verificationSent, setVerificationSent] = useState(false);
+    // const [verificationCode, setVerificationCode] = useState('');
+    // const [isPhoneVerified,  setIsPhoneVerified]  = useState(false);
+    // const [timer,            setTimer]            = useState(0);
+    // const [isSendingCode,    setIsSendingCode]    = useState(false);
+    // const [isVerifying,      setIsVerifying]      = useState(false);
+    // const [verifyError,      setVerifyError]      = useState('');
+
+    const emailTimerRef  = useRef<ReturnType<typeof setInterval> | null>(null);
+    const emailGroupRef  = useRef<HTMLDivElement>(null);
+
+    // ── 이메일 타이머 ──
+    const clearEmailTimer = () => {
+        if (emailTimerRef.current !== null) {
+            clearInterval(emailTimerRef.current);
+            emailTimerRef.current = null;
+        }
+    };
+
+    const startEmailTimer = () => {
+        clearEmailTimer();
+        setEmailTimer(EMAIL_TIMEOUT);
+        emailTimerRef.current = setInterval(() => {
+            setEmailTimer((prev) => {
+                if (prev <= 1) { clearEmailTimer(); return 0; }
+                return prev - 1;
+            });
+        }, 1000);
+    };
+
+    useEffect(() => { return () => clearEmailTimer(); }, []);
 
     useEffect(() => {
-        if (timer <= 0) return;
-        const id = setInterval(() => setTimer((t) => t - 1), 1000);
-        return () => clearInterval(id);
-    }, [timer]);
+        if (!emailVerifyAlert) return;
+        const id = setTimeout(() => setEmailVerifyAlert(false), 3000);
+        return () => clearTimeout(id);
+    }, [emailVerifyAlert]);
 
-    const resetVerification = () => {
-        setVerificationSent(false);
-        setIsPhoneVerified(false);
-        setVerificationCode('');
-        setVerifyError('');
-        setTimer(0);
+    // // ── 휴대폰 타이머 (기존 방식) ──
+    // useEffect(() => {
+    //     if (timer <= 0) return;
+    //     const id = setInterval(() => setTimer((t) => t - 1), 1000);
+    //     return () => clearInterval(id);
+    // }, [timer]);
+
+    const resetEmailVerify = () => {
+        setEmailVerificationSent(false);
+        setIsEmailVerified(false);
+        setEmailVerificationCode('');
+        setEmailVerifyError('');
+        setEmailTimer(0);
+        clearEmailTimer();
     };
 
-    const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setPhone(formatPhone(e.target.value));
-        resetVerification();
+    // const resetVerification = () => {
+    //     setVerificationSent(false);
+    //     setIsPhoneVerified(false);
+    //     setVerificationCode('');
+    //     setVerifyError('');
+    //     setTimer(0);
+    // };
+
+    const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setEmail(e.target.value);
+        if (emailVerificationSent || isEmailVerified) resetEmailVerify();
     };
 
-    const handleSendVerification = async () => {
-        const rawPhone = phone.replace(/-/g, '');
-        if (rawPhone.length < 10) { setVerifyError('휴대폰 번호를 올바르게 입력해주세요.'); return; }
-        setVerifyError('');
-        setIsSendingCode(true);
+    // const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    //     setPhone(formatPhone(e.target.value));
+    //     resetVerification();
+    // };
+
+    const handleSendEmailVerification = async () => {
+        if (!email) { setEmailVerifyError('이메일을 입력해주세요.'); return; }
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(email)) { setEmailVerifyError('올바른 이메일 형식을 입력해주세요.'); return; }
+        setEmailVerifyError('');
+        setIsSendingEmailCode(true);
         try {
-            await authApi.sendSmsCode(rawPhone, carrier);
-            setVerificationSent(true);
-            setVerificationCode('');
-            setIsPhoneVerified(false);
-            setTimer(SMS_TIMEOUT);
+            await authApi.sendEmailCode(email);
+            setEmailVerificationSent(true);
+            setEmailVerificationCode('');
+            setIsEmailVerified(false);
+            startEmailTimer();
         } catch {
-            setVerifyError('인증번호 발송에 실패했습니다. 다시 시도해주세요.');
+            setEmailVerifyError('인증번호 발송에 실패했습니다. 다시 시도해주세요.');
         } finally {
-            setIsSendingCode(false);
+            setIsSendingEmailCode(false);
         }
     };
 
-    const handleVerifyCode = async () => {
-        if (verificationCode.length !== 6) { setVerifyError('인증번호 6자리를 입력해주세요.'); return; }
-        if (timer <= 0) { setVerifyError('인증 시간이 만료되었습니다. 재발송 후 다시 시도해주세요.'); return; }
-        setVerifyError('');
-        setIsVerifying(true);
+    // const handleSendVerification = async () => {
+    //     const rawPhone = phone.replace(/-/g, '');
+    //     if (rawPhone.length < 10) { setVerifyError('휴대폰 번호를 올바르게 입력해주세요.'); return; }
+    //     setVerifyError('');
+    //     setIsSendingCode(true);
+    //     try {
+    //         await authApi.sendSmsCode(rawPhone, carrier);
+    //         setVerificationSent(true);
+    //         setVerificationCode('');
+    //         setIsPhoneVerified(false);
+    //         setTimer(SMS_TIMEOUT);
+    //     } catch {
+    //         setVerifyError('인증번호 발송에 실패했습니다. 다시 시도해주세요.');
+    //     } finally {
+    //         setIsSendingCode(false);
+    //     }
+    // };
+
+    const handleVerifyEmailCode = async () => {
+        if (emailVerificationCode.length !== 8) { setEmailVerifyError('인증번호 8자리를 입력해주세요.'); return; }
+        if (emailTimer <= 0) { setEmailVerifyError('인증 시간이 만료되었습니다. 재발송 후 다시 시도해주세요.'); return; }
+        setEmailVerifyError('');
+        setIsVerifyingEmail(true);
         try {
-            await authApi.verifySmsCode(phone.replace(/-/g, ''), verificationCode);
-            setIsPhoneVerified(true);
-            setTimer(0);
+            await authApi.verifyEmailCode(email, emailVerificationCode);
+            setIsEmailVerified(true);
+            setEmailVerifyAlert(false);
+            setEmailTimer(0);
+            clearEmailTimer();
         } catch {
-            setVerifyError('인증번호가 올바르지 않습니다.');
+            setEmailVerifyError('인증번호가 올바르지 않습니다.');
         } finally {
-            setIsVerifying(false);
+            setIsVerifyingEmail(false);
         }
     };
+
+    // const handleVerifyCode = async () => {
+    //     if (verificationCode.length !== 6) { setVerifyError('인증번호 6자리를 입력해주세요.'); return; }
+    //     if (timer <= 0) { setVerifyError('인증 시간이 만료되었습니다. 재발송 후 다시 시도해주세요.'); return; }
+    //     setVerifyError('');
+    //     setIsVerifying(true);
+    //     try {
+    //         await authApi.verifySmsCode(phone.replace(/-/g, ''), verificationCode);
+    //         setIsPhoneVerified(true);
+    //         setTimer(0);
+    //     } catch {
+    //         setVerifyError('인증번호가 올바르지 않습니다.');
+    //     } finally {
+    //         setIsVerifying(false);
+    //     }
+    // };
 
     const pwStrength = getPwStrength(password);
     const st = strengthText(pwStrength);
@@ -197,17 +318,45 @@ function SignupForm({ onSwitchTab }: { onSwitchTab: () => void }) {
         setAgreePrivacy(v); setAgreeAll(agreeTerms && v);
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        if (!name.trim())                  { setError('이름을 입력해주세요.'); return; }
-        if (!email)                        { setError('이메일을 입력해주세요.'); return; }
-        if (password.length < 8)           { setError('비밀번호는 8자 이상이어야 합니다.'); return; }
-        if (password !== pwConfirm)        { setError('비밀번호가 일치하지 않습니다.'); return; }
-        if (!isPhoneVerified)              { setError('휴대폰 본인인증을 완료해주세요.'); return; }
-        if (!agreeTerms || !agreePrivacy)  { setError('필수 약관에 동의해주세요.'); return; }
-        // TODO: 실제 회원가입 API 연동
-        alert('회원가입 성공 (mock)');
+        if (!name.trim())                 { setError('이름을 입력해주세요.'); return; }
+        if (!email)                       { setError('이메일을 입력해주세요.'); return; }
+        if (password.length < 8)          { setError('비밀번호는 8자 이상이어야 합니다.'); return; }
+        if (password !== pwConfirm)       { setError('비밀번호가 일치하지 않습니다.'); return; }
+        if (!isEmailVerified) {
+            setEmailVerifyAlert(true);
+            emailGroupRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return;
+        }
+        // if (!isPhoneVerified)          { setError('휴대폰 본인인증을 완료해주세요.'); return; }
+        if (!agreeTerms || !agreePrivacy) { setError('필수 약관에 동의해주세요.'); return; }
+
+        setLoading(true);
+        try {
+            const signupData = await authApi.signup({
+                email,
+                password,
+                nickname: name,
+                // phoneNumber: rawPhone,
+                // carrier: carrier || undefined,
+            });
+            const token = signupData.accessToken as string;
+            const me    = await authApi.me(token);
+            setAuth(me, token);
+            onClose();
+            navigate('/');
+        } catch (err: unknown) {
+            const code = (err as any)?.response?.data?.error?.code;
+            setError(
+                code === 'USER_DUPLICATE_EMAIL'
+                    ? '이미 사용 중인 이메일입니다.'
+                    : '회원가입 중 오류가 발생했습니다.'
+            );
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -225,17 +374,70 @@ function SignupForm({ onSwitchTab }: { onSwitchTab: () => void }) {
                 />
             </div>
 
-            <div className="modal-form-group">
+            {/* ── 이메일 인증 ── */}
+            <div
+                className={`modal-form-group${emailVerifyAlert ? ' modal-email-verify-alert' : ''}`}
+                ref={emailGroupRef}
+            >
                 <label className="modal-label" htmlFor="m-su-email">이메일</label>
-                <input
-                    id="m-su-email"
-                    className="modal-input"
-                    type="email"
-                    placeholder="example@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    autoComplete="email"
-                />
+                <div className="modal-email-row">
+                    <input
+                        id="m-su-email"
+                        className="modal-input"
+                        type="email"
+                        placeholder="example@email.com"
+                        value={email}
+                        onChange={handleEmailChange}
+                        autoComplete="email"
+                        disabled={isEmailVerified}
+                    />
+                    <button
+                        type="button"
+                        className="modal-verify-btn"
+                        onClick={handleSendEmailVerification}
+                        disabled={isSendingEmailCode || isEmailVerified || !email}
+                    >
+                        {isSendingEmailCode ? '발송 중...' : emailVerificationSent ? '재발송' : '인증요청'}
+                    </button>
+                </div>
+
+                {isEmailVerified ? (
+                    <p className="modal-phone-verified">&#10003; 인증완료</p>
+                ) : emailVerificationSent && (
+                    <div className="modal-verify-row">
+                        <input
+                            className="modal-input"
+                            type="text"
+                            placeholder="인증번호 8자리"
+                            value={emailVerificationCode}
+                            onChange={(e) => setEmailVerificationCode(e.target.value.slice(0, 8))}
+                            maxLength={8}
+                        />
+                        {emailTimer > 0 && (
+                            <span className={`modal-verify-timer${emailTimer <= 30 ? ' modal-timer-urgent' : ''}`}>
+                                {formatTimer(emailTimer)}
+                            </span>
+                        )}
+                        {emailTimer === 0 && emailVerificationSent && (
+                            <span className="modal-verify-timer modal-timer-expired">만료</span>
+                        )}
+                        <button
+                            type="button"
+                            className="modal-verify-btn"
+                            onClick={handleVerifyEmailCode}
+                            disabled={isVerifyingEmail || emailVerificationCode.length !== 8 || emailTimer <= 0}
+                        >
+                            {isVerifyingEmail ? '확인 중...' : '인증확인'}
+                        </button>
+                    </div>
+                )}
+
+                {emailVerifyAlert && (
+                    <p className="modal-email-verify-alert-msg">
+                        ⚠️ 이메일 인증을 완료해주세요.
+                    </p>
+                )}
+                {emailVerifyError && <p className="modal-verify-error">{emailVerifyError}</p>}
             </div>
 
             <div className="modal-form-group">
@@ -279,8 +481,8 @@ function SignupForm({ onSwitchTab }: { onSwitchTab: () => void }) {
                 {pwMatch    && <span className="modal-input-hint" style={{ color: '#10b981' }}>비밀번호가 일치합니다.</span>}
             </div>
 
-            {/* 휴대폰 인증 */}
-            <div className="modal-form-group">
+            {/* ── 휴대폰 인증 (주석 처리) ── */}
+            {/* <div className="modal-form-group">
                 <label className="modal-label" htmlFor="m-phone">휴대폰 번호</label>
                 <div className="modal-phone-row">
                     <select
@@ -338,7 +540,7 @@ function SignupForm({ onSwitchTab }: { onSwitchTab: () => void }) {
                 )}
 
                 {verifyError && <p className="modal-verify-error">{verifyError}</p>}
-            </div>
+            </div> */}
 
             <div className="modal-terms-box">
                 <label className="modal-terms-item">
@@ -362,7 +564,9 @@ function SignupForm({ onSwitchTab }: { onSwitchTab: () => void }) {
 
             {error && <p className="modal-error">{error}</p>}
 
-            <button type="submit" className="modal-submit-btn">가입하기</button>
+            <button type="submit" className="modal-submit-btn" disabled={loading}>
+                {loading ? '가입 중...' : '가입하기'}
+            </button>
 
             <p className="modal-switch">
                 이미 계정이 있으신가요?{' '}
@@ -435,8 +639,8 @@ export default function AuthModal({ initialTab = 'login', onClose }: Props) {
                 {/* 폼 */}
                 <div className="auth-modal-body">
                     {tab === 'login'
-                        ? <LoginForm  onSwitchTab={() => setTab('signup')} />
-                        : <SignupForm onSwitchTab={() => setTab('login')}  />
+                        ? <LoginForm  onSwitchTab={() => setTab('signup')} onClose={onClose} />
+                        : <SignupForm onSwitchTab={() => setTab('login')}  onClose={onClose} />
                     }
                 </div>
             </div>

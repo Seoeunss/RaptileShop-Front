@@ -46,7 +46,8 @@
     gap: 12px;
 }
 
-.phone-row {
+.phone-row,
+.email-row {
     display: flex;
     gap: 8px;
     align-items: center;
@@ -93,6 +94,19 @@
     flex-shrink: 0;
 }
 
+.timer-urgent {
+    color: #ef4444;
+    animation: blink 1s step-start infinite;
+}
+
+.timer-expired {
+    color: #94a3b8;
+}
+
+@keyframes blink {
+    50% { opacity: 0.4; }
+}
+
 .phone-verified-badge {
     margin-top: 8px;
     font-size: 13px;
@@ -104,6 +118,38 @@
     margin-top: 4px;
     font-size: 12px;
     color: #ef4444;
+}
+
+/* 휴대폰/이메일 인증 미완료 알림 — form-group에 붙는 강조 스타일 */
+.form-group.phone-verify-alert,
+.form-group.email-verify-alert {
+    border-radius: 12px;
+    outline: 2px solid #f59e0b;
+    outline-offset: 2px;
+    animation: shake 0.35s ease;
+}
+
+/* 알림 메시지 */
+.phone-verify-alert-msg,
+.email-verify-alert-msg {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #fffbeb;
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #b45309;
+}
+
+/* 흔들림 애니메이션 */
+@keyframes shake {
+    0%   { transform: translateX(0); }
+    20%  { transform: translateX(-6px); }
+    40%  { transform: translateX(6px); }
+    60%  { transform: translateX(-4px); }
+    80%  { transform: translateX(4px); }
+    100% { transform: translateX(0); }
 }
 
 .carrier-select {
@@ -130,7 +176,8 @@
     border-color: var(--primary);
 }
 
-.phone-row .form-input {
+.phone-row .form-input,
+.email-row .form-input {
     flex: 1;
 }
 

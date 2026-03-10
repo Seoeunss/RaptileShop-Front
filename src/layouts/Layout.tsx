@@ -6,6 +6,7 @@ import AuthModal from "../components/auth/AuthModal";
 import Sidebar from "../components/layout/Sidebar";
 import { Outlet } from "react-router-dom";
 import { headerNavItems } from "../router/routes";
+import { useAuthStore } from "../store/authStore";
 import "./style/Layout.css";
 
 type AuthTab = "login" | "signup" | null;
@@ -13,6 +14,11 @@ type AuthTab = "login" | "signup" | null;
 export default function Layout() {
     const [authModal, setAuthModal] = useState<AuthTab>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const { isAuthenticated, user, clearAuth } = useAuthStore();
+
+    const handleLogout = () => {
+        clearAuth();
+    };
 
     return (
         <div className="appRoot">
@@ -22,6 +28,9 @@ export default function Layout() {
                 onLoginClick={() => setAuthModal("login")}
                 onSignupClick={() => setAuthModal("signup")}
                 onMenuClick={() => setSidebarOpen(true)}
+                isAuthenticated={isAuthenticated}
+                userName={user?.nickname}
+                onLogoutClick={handleLogout}
             />
 
             {/* 드로어 오버레이 */}

@@ -47,6 +47,9 @@ type HeaderProps = {
     onSignupClick?: () => void;
     onMenuClick?: () => void;
     showMenuButton?: boolean;
+    isAuthenticated?: boolean;
+    userName?: string;
+    onLogoutClick?: () => void;
 };
 
 function isExternalLink(to: string) {
@@ -60,6 +63,9 @@ export default function Header({
     onSignupClick,
     onMenuClick,
     showMenuButton = true,
+    isAuthenticated = false,
+    userName,
+    onLogoutClick,
 }: HeaderProps) {
     useEffect(() => {
         const style = document.createElement("style");
@@ -131,13 +137,28 @@ export default function Header({
                         고객문의
                     </Link>
 
-                    <button className="appBtn appBtnGhost" onClick={onLoginClick}>
-                        로그인
-                    </button>
-
-                    <button className="appBtn appBtnPrimary" onClick={onSignupClick}>
-                        회원가입
-                    </button>
+                    {isAuthenticated ? (
+                        <>
+                            <div className="appUserBadge appOnlyPC">
+                                <span className="appUserAvatar" aria-hidden="true">
+                                    {userName ? userName.charAt(0) : "?"}
+                                </span>
+                                <span className="appUserName">{userName}</span>
+                            </div>
+                            <button className="appBtn appBtnGhost" onClick={onLogoutClick}>
+                                로그아웃
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <button className="appBtn appBtnGhost" onClick={onLoginClick}>
+                                로그인
+                            </button>
+                            <button className="appBtn appBtnPrimary" onClick={onSignupClick}>
+                                회원가입
+                            </button>
+                        </>
+                    )}
                 </div>
             </div>
         </header>
