@@ -1,111 +1,107 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { chatApi } from '../../services/chatApi';
+import { useStompChat, ChatMessage } from '../../hooks/useStompChat';
+import { useAuthStore } from '../../store/authStore';
 import './style/ChatPage.css';
 
-type Message = {
+interface ApiRoom {
+    id: number;
+    partnerName: string;
+    productName: string;
+    productPrice: number;
+    productId: number;
+}
+
+interface DisplayMessage {
     id: number;
     text: string;
     isMine: boolean;
     time: string;
     date: string;
-};
+}
 
-type ChatRoom = {
-    id: number;
-    partnerName: string;
-    avatarEmoji: string;
-    productName: string;
-    productPrice: number;
-    productId: number;
-    messages: Message[];
-};
+function formatTime(dateStr: string): string {
+    const date = new Date(dateStr);
+    const hours = date.getHours();
+    const minutes = date.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? '오후' : '오전';
+    return `${ampm} ${hours % 12 || 12}:${minutes}`;
+}
 
-const chatData: Record<number, ChatRoom> = {
-    1: {
-        id: 1,
-        partnerName: '김민준',
-        avatarEmoji: '🦎',
-        productName: '볼 파이톤',
-        productPrice: 300000,
-        productId: 1,
-        messages: [
-            { id: 1, text: '안녕하세요! 볼 파이톤 아직 판매 중인가요?', isMine: false, time: '오후 3:20', date: '오늘' },
-            { id: 2, text: '네, 판매 중입니다! 관심 있으신가요?', isMine: true, time: '오후 3:21', date: '오늘' },
-            { id: 3, text: '혹시 나이가 어떻게 되나요? 그리고 먹이는 잘 먹고 있나요?', isMine: false, time: '오후 3:22', date: '오늘' },
-            { id: 4, text: '생후 8개월이고요, 핑크마우스 해동해서 잘 먹고 있어요 🐭', isMine: true, time: '오후 3:23', date: '오늘' },
-            { id: 5, text: '안녕하세요! 볼 파이톤 아직 판매 중인가요?', isMine: false, time: '오후 3:24', date: '오늘' },
-        ],
-    },
-    2: {
-        id: 2,
-        partnerName: '이서연',
-        avatarEmoji: '🐍',
-        productName: '콘스네이크',
-        productPrice: 180000,
-        productId: 2,
-        messages: [
-            { id: 1, text: '콘스네이크 분양가 좀 더 내려주실 수 있나요?', isMine: false, time: '오전 10:50', date: '오늘' },
-            { id: 2, text: '죄송한데 가격은 조정이 어렵습니다 ㅠ', isMine: true, time: '오전 10:55', date: '오늘' },
-            { id: 3, text: '알겠어요, 그럼 택배 가능한가요?', isMine: false, time: '오전 11:00', date: '오늘' },
-            { id: 4, text: '네, 택배 가능합니다! 항공택배로 보내드려요', isMine: true, time: '오전 11:03', date: '오늘' },
-            { id: 5, text: '네, 건강하게 잘 지내고 있어요 😊', isMine: false, time: '오전 11:05', date: '오늘' },
-        ],
-    },
-    3: {
-        id: 3,
-        partnerName: '박도현',
-        avatarEmoji: '🦕',
-        productName: '킹스네이크',
-        productPrice: 250000,
-        productId: 3,
-        messages: [
-            { id: 1, text: '킹스네이크 사진 좀 더 보내주실 수 있나요?', isMine: false, time: '어제', date: '어제' },
-            { id: 2, text: '물론이죠! 잠깐만요', isMine: true, time: '어제', date: '어제' },
-            { id: 3, text: '직거래 가능하신가요? 서울 강남 쪽으로요', isMine: false, time: '어제', date: '어제' },
-        ],
-    },
-    4: {
-        id: 4,
-        partnerName: '최지우',
-        avatarEmoji: '🐊',
-        productName: '볼 파이톤2',
-        productPrice: 300000,
-        productId: 4,
-        messages: [
-            { id: 1, text: '입금 완료했습니다!', isMine: false, time: '월요일', date: '월요일' },
-            { id: 2, text: '확인했어요! 바로 발송할게요 📦', isMine: true, time: '월요일', date: '월요일' },
-            { id: 3, text: '택배 발송 완료했습니다! 운송장번호 드릴게요', isMine: true, time: '월요일', date: '월요일' },
-        ],
-    },
-    5: {
-        id: 5,
-        partnerName: '정하은',
-        avatarEmoji: '🦖',
-        productName: '콘스네이크2',
-        productPrice: 180000,
-        productId: 5,
-        messages: [
-            { id: 1, text: '안녕하세요~ 혹시 사진 더 보내주실 수 있나요?', isMine: false, time: '지난주', date: '지난주' },
-        ],
-    },
-};
+function formatDate(dateStr: string): string {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const target = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    const diffDays = Math.floor((today.getTime() - target.getTime()) / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return '오늘';
+    if (diffDays === 1) return '어제';
+    const days = ['일', '월', '화', '수', '목', '금', '토'];
+    if (diffDays < 7) return `${days[date.getDay()]}요일`;
+    return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;
+}
+
+function toDisplayMessage(msg: ChatMessage, currentUserId: number): DisplayMessage {
+    return {
+        id: msg.id,
+        text: msg.content,
+        isMine: msg.senderId === currentUserId,
+        time: formatTime(msg.createdAt),
+        date: formatDate(msg.createdAt),
+    };
+}
 
 export default function ChatPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const { user } = useAuthStore();
+    const [room, setRoom] = useState<ApiRoom | null>(null);
+    const [messages, setMessages] = useState<DisplayMessage[]>([]);
+    const [loading, setLoading] = useState(true);
     const [inputText, setInputText] = useState('');
-    const [messages, setMessages] = useState<Message[]>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
 
     const roomId = Number(id);
-    const room = chatData[roomId];
+
+    const handleMessage = useCallback((msg: ChatMessage) => {
+        if (!user) return;
+        setMessages((prev) => [...prev, toDisplayMessage(msg, user.id)]);
+    }, [user]);
+
+    const { sendMessage } = useStompChat({ roomId, onMessage: handleMessage });
 
     useEffect(() => {
-        if (room) {
-            setMessages(room.messages);
-        }
-    }, [roomId]);
+        if (!roomId) return;
+
+        Promise.all([
+            chatApi.getRooms(),
+            chatApi.getMessages(roomId),
+        ])
+            .then(([rooms, msgsData]) => {
+                const found: ApiRoom | null = rooms?.find((r: ApiRoom) => r.id === roomId) ?? null;
+                setRoom(found);
+
+                // 응답이 페이지네이션 형태({ content: [...] }) 또는 배열 모두 처리
+                const msgList: ChatMessage[] = Array.isArray(msgsData)
+                    ? msgsData
+                    : (msgsData?.content ?? []);
+
+                if (user) {
+                    setMessages(msgList.map((m: ChatMessage) => toDisplayMessage(m, user.id)));
+                }
+
+                // 읽음 처리
+                if (msgList.length > 0) {
+                    const lastId = msgList[msgList.length - 1].id;
+                    chatApi.markAsRead(roomId, lastId).catch(() => {});
+                }
+            })
+            .catch(console.error)
+            .finally(() => setLoading(false));
+    }, [roomId, user]);
 
     useEffect(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -114,23 +110,7 @@ export default function ChatPage() {
     const handleSend = () => {
         const text = inputText.trim();
         if (!text) return;
-
-        const now = new Date();
-        const hours = now.getHours();
-        const minutes = now.getMinutes().toString().padStart(2, '0');
-        const ampm = hours >= 12 ? '오후' : '오전';
-        const displayHours = hours % 12 || 12;
-        const timeStr = `${ampm} ${displayHours}:${minutes}`;
-
-        const newMsg: Message = {
-            id: messages.length + 1,
-            text,
-            isMine: true,
-            time: timeStr,
-            date: '오늘',
-        };
-
-        setMessages((prev) => [...prev, newMsg]);
+        sendMessage(text);
         setInputText('');
         inputRef.current?.focus();
     };
@@ -141,6 +121,14 @@ export default function ChatPage() {
             handleSend();
         }
     };
+
+    if (loading) {
+        return (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', color: 'var(--text-sub)' }}>
+                로딩 중...
+            </div>
+        );
+    }
 
     if (!room) {
         return (
@@ -158,7 +146,7 @@ export default function ChatPage() {
     }
 
     // 날짜별 메시지 그룹화
-    const groupedMessages = messages.reduce<{ date: string; msgs: Message[] }[]>((acc, msg) => {
+    const groupedMessages = messages.reduce<{ date: string; msgs: DisplayMessage[] }[]>((acc, msg) => {
         const last = acc[acc.length - 1];
         if (last && last.date === msg.date) {
             last.msgs.push(msg);
@@ -167,6 +155,8 @@ export default function ChatPage() {
         }
         return acc;
     }, []);
+
+    const partnerInitial = room.partnerName?.charAt(0) ?? '?';
 
     return (
         <div className="chat-page">
@@ -181,7 +171,7 @@ export default function ChatPage() {
                         <path d="M15 18l-6-6 6-6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
                 </button>
-                <div className="chat-header-avatar">{room.avatarEmoji}</div>
+                <div className="chat-header-avatar">{partnerInitial}</div>
                 <div className="chat-header-info">
                     <p className="chat-header-name">{room.partnerName}</p>
                     <p className="chat-header-sub">{room.productName} · {room.productPrice.toLocaleString()}원</p>
@@ -194,7 +184,7 @@ export default function ChatPage() {
                     className="chat-product-thumb"
                     style={{ background: 'linear-gradient(135deg, #eaf6f3, #d1faf5)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22 }}
                 >
-                    {room.avatarEmoji}
+                    {partnerInitial}
                 </div>
                 <div className="chat-product-info">
                     <p className="chat-product-name">{room.productName}</p>
@@ -216,7 +206,7 @@ export default function ChatPage() {
                         {group.msgs.map((msg) => (
                             <div key={msg.id} className={`chat-msg-row ${msg.isMine ? 'mine' : ''}`}>
                                 {!msg.isMine && (
-                                    <div className="chat-msg-avatar">{room.avatarEmoji}</div>
+                                    <div className="chat-msg-avatar">{partnerInitial}</div>
                                 )}
                                 <div className="chat-msg-content">
                                     <div className="chat-bubble">{msg.text}</div>

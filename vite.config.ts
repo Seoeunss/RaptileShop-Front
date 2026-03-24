@@ -5,6 +5,9 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
+  define: {
+    global: 'globalThis',
+  },
   css: {
     postcss: './postcss.config.js', // PostCSS 설정파일 경로 명시
   },
