@@ -20,10 +20,14 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
+      // 1) 로그인 → accessToken 수령
       const data  = await authApi.login({ email, password });
       const token = data.accessToken as string;
-      localStorage.setItem('accessToken', token);
-      const me = await authApi.me();
+
+      // 2) me() 호출 시 token 직접 전달 → Authorization 헤더 보장
+      const me = await authApi.me(token);
+
+      // 3) zustand store + localStorage 갱신
       setAuth(me, token);
       navigate('/');
     } catch (err: unknown) {
@@ -49,17 +53,27 @@ export default function LoginPage() {
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label" htmlFor="email">이메일</label>
-            <input id="email" className="form-input" type="email"
-              placeholder="이메일을 입력하세요" value={email}
-              onChange={(e) => setEmail(e.target.value)} autoComplete="email" />
+            <input
+              id="email" className="form-input" type="email"
+              placeholder="이메일을 입력하세요"
+              value={email} onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+            />
           </div>
           <div className="form-group">
             <label className="form-label" htmlFor="password">비밀번호</label>
-            <input id="password" className="form-input" type="password"
-              placeholder="비밀번호를 입력하세요" value={password}
-              onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
+            <input
+              id="password" className="form-input" type="password"
+              placeholder="비밀번호를 입력하세요"
+              value={password} onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+            />
           </div>
-          {error && <p style={{ margin: 0, fontSize: 13, color: '#ef4444', textAlign: 'center' }}>{error}</p>}
+          {error && (
+            <p style={{ margin: 0, fontSize: 13, color: '#ef4444', textAlign: 'center' }}>
+              {error}
+            </p>
+          )}
           <button type="submit" className="auth-btn" disabled={loading}>
             {loading ? '로그인 중...' : '로그인'}
           </button>

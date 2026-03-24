@@ -191,3 +191,40 @@
         display: none;
     }
 }
+
+/* 로그인 유저 배지 */
+.appUserBadge {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 5px 12px 5px 6px;
+    border-radius: 99px;
+    background: rgba(18, 179, 166, 0.08);
+    border: 1.5px solid rgba(18, 179, 166, 0.2);
+    cursor: default;
+}
+
+.appUserAvatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary, #12b3a6), #6ee7d8);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    text-transform: uppercase;
+}
+
+.appUserName {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--primary, #12b3a6);
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}

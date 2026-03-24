@@ -216,6 +216,61 @@
     text-decoration: underline;
 }
 
+/* Email / Phone verification row */
+
+.modal-email-row {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.modal-email-row .modal-input {
+    flex: 1;
+    min-width: 0;
+}
+
+/* 이메일 인증 미완료 알림 */
+.modal-form-group.modal-email-verify-alert {
+    border-radius: 11px;
+    outline: 2px solid #f59e0b;
+    outline-offset: 2px;
+    animation: modalShake 0.35s ease;
+}
+
+@keyframes modalShake {
+    0%   { transform: translateX(0); }
+    20%  { transform: translateX(-5px); }
+    40%  { transform: translateX(5px); }
+    60%  { transform: translateX(-3px); }
+    80%  { transform: translateX(3px); }
+    100% { transform: translateX(0); }
+}
+
+.modal-email-verify-alert-msg {
+    margin-top: 6px;
+    padding: 7px 11px;
+    background: #fffbeb;
+    border: 1px solid #f59e0b;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #b45309;
+}
+
+/* 타이머 상태 */
+.modal-timer-urgent {
+    color: #ef4444;
+    animation: modalBlink 1s step-start infinite;
+}
+
+@keyframes modalBlink {
+    50% { opacity: 0.4; }
+}
+
+.modal-timer-expired {
+    color: #94a3b8;
+}
+
 /* Phone verification */
 
 .modal-phone-row {

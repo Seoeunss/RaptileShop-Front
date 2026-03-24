@@ -1,21 +1,82 @@
 import api from '../lib/api';
 
-export interface SignupData { email: string; password: string; nickname: string; phone?: string; carrier?: string; }
-export interface LoginData  { email: string; password: string; }
-
 export const authApi = {
-  signup: (data: SignupData) =>
-    api.post('/auth/signup', data).then((r) => r.data.data),
+  /**
+   * 회원가입
+   * POST /api/v1/auth/signup
+   * body: { email, password, nickname, phoneNumber, carrier? }
+   */
+  signup: async (body: {
+    email: string;
+    password: string;
+    nickname: string;
+    phoneNumber?: string;
+    carrier?: string;
+  }) => {
+    const res = await api.post('/auth/signup', body);
+    return res.data.data; // { accessToken, user: { id, nickname } }
+  },
 
-  login: (data: LoginData) =>
-    api.post('/auth/login', data).then((r) => r.data.data),
+  /**
+   * 로그인
+   * POST /api/v1/auth/login
+   * body: { email, password }
+   */
+  login: async (body: { email: string; password: string }) => {
+    const res = await api.post('/auth/login', body);
+    return res.data.data;
+  },
 
-  me: () =>
-    api.get('/auth/me').then((r) => r.data.data),
+  /**
+   * 내 정보 조회
+   * GET /api/v1/auth/me
+   *
+   * @param token - 선택적. signup/login 직후 localStorage 저장 전에 호출할 때 직접 토큰 전달
+   *                생략하면 api 인터셉터가 localStorage에서 자동으로 읽음
+   */
+  me: async (token?: string) => {
+    const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+    const res = await api.get('/auth/me', { headers });
+    return res.data.data;
+  },
 
-  sendSmsCode: (phone: string, carrier: string) =>
-    api.post('/auth/sms/send', { phone, carrier }).then((r) => r.data.data),
+  /**
+   * 휴대폰 인증번호 발송
+   * POST /api/v1/auth/phone/send
+   * body: { phoneNumber }
+   */
+  sendSmsCode: async (phoneNumber: string) => {
+    const res = await api.post('/auth/phone/send', { phoneNumber });
+    return res.data.data; // { code } — 개발환경 전용, 운영에서 제거 예정
+  },
 
-  verifySmsCode: (phone: string, code: string) =>
-    api.post('/auth/sms/verify', { phone, code }).then((r) => r.data.data),
+  /**
+   * 휴대폰 인증번호 검증
+   * POST /api/v1/auth/phone/verify
+   * body: { phoneNumber, code }
+   */
+  verifySmsCode: async (phoneNumber: string, code: string) => {
+    const res = await api.post('/auth/phone/verify', { phoneNumber, code });
+    return res.data.data;
+  },
+
+  /**
+   * 이메일 인증번호 발송
+   * POST /api/v1/auth/email/send
+   * body: { email }
+   */
+  sendEmailCode: async (email: string) => {
+    const res = await api.post('/auth/email/send', { email });
+    return res.data.data;
+  },
+
+  /**
+   * 이메일 인증번호 검증
+   * POST /api/v1/auth/email/verify
+   * body: { email, code }
+   */
+  verifyEmailCode: async (email: string, code: string) => {
+    const res = await api.post('/auth/email/verify', { email, code });
+    return res.data.data;
+  },
 };

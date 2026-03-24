@@ -1,7 +1,9 @@
 import axios from 'axios';
 
+// Vite proxy(/api → http://localhost:8082)를 통해 백엔드 호출
+// baseURL을 상대경로로 설정 → vite.config의 proxy 설정이 포트를 처리
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1',
+  baseURL: '/api/v1',
   timeout: 10000,
   headers: { 'Content-Type': 'application/json' },
 });
