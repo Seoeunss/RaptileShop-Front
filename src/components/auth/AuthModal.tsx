@@ -143,6 +143,7 @@ function SignupForm({ onSwitchTab, onClose }: { onSwitchTab: () => void; onClose
     const [pwConfirm,  setPwConfirm]  = useState('');
     // const [carrier,    setCarrier]    = useState<string>('SKT');
     // const [phone,      setPhone]      = useState('');
+    const [nicknameCheckStatus, setNicknameCheckStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
     const [agreeAll,     setAgreeAll]     = useState(false);
     const [agreeTerms,   setAgreeTerms]   = useState(false);
     const [agreePrivacy, setAgreePrivacy] = useState(false);
@@ -221,6 +222,22 @@ function SignupForm({ onSwitchTab, onClose }: { onSwitchTab: () => void; onClose
     //     setVerifyError('');
     //     setTimer(0);
     // };
+
+    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setName(e.target.value);
+        if (nicknameCheckStatus !== 'idle') setNicknameCheckStatus('idle');
+    };
+
+    const handleCheckNickname = async () => {
+        if (!name.trim()) return;
+        setNicknameCheckStatus('checking');
+        try {
+            const result = await authApi.checkNickname(name.trim());
+            setNicknameCheckStatus(result.available ? 'available' : 'taken');
+        } catch {
+            setNicknameCheckStatus('taken');
+        }
+    };
 
     const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEmail(e.target.value);
@@ -321,7 +338,8 @@ function SignupForm({ onSwitchTab, onClose }: { onSwitchTab: () => void; onClose
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
-        if (!name.trim())                 { setError('이름을 입력해주세요.'); return; }
+        if (!name.trim())                 { setError('닉네임을 입력해주세요.'); return; }
+        if (nicknameCheckStatus !== 'available') { setError('닉네임 중복체크를 완료해주세요.'); return; }
         if (!email)                       { setError('이메일을 입력해주세요.'); return; }
         if (password.length < 8)          { setError('비밀번호는 8자 이상이어야 합니다.'); return; }
         if (password !== pwConfirm)       { setError('비밀번호가 일치하지 않습니다.'); return; }
@@ -362,16 +380,32 @@ function SignupForm({ onSwitchTab, onClose }: { onSwitchTab: () => void; onClose
     return (
         <form className="modal-form" onSubmit={handleSubmit}>
             <div className="modal-form-group">
-                <label className="modal-label" htmlFor="m-name">이름</label>
-                <input
-                    id="m-name"
-                    className="modal-input"
-                    type="text"
-                    placeholder="이름을 입력하세요"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    autoComplete="name"
-                />
+                <label className="modal-label" htmlFor="m-name">닉네임</label>
+                <div className="modal-email-row">
+                    <input
+                        id="m-name"
+                        className="modal-input"
+                        type="text"
+                        placeholder="사용할 닉네임을 입력하세요"
+                        value={name}
+                        onChange={handleNameChange}
+                        autoComplete="nickname"
+                    />
+                    <button
+                        type="button"
+                        className="modal-verify-btn"
+                        onClick={handleCheckNickname}
+                        disabled={nicknameCheckStatus === 'checking' || !name.trim()}
+                    >
+                        {nicknameCheckStatus === 'checking' ? '확인 중...' : '중복체크'}
+                    </button>
+                </div>
+                {nicknameCheckStatus === 'available' && (
+                    <p className="modal-nickname-check available">사용가능한 닉네임입니다.</p>
+                )}
+                {nicknameCheckStatus === 'taken' && (
+                    <p className="modal-nickname-check taken">사용중인 닉네임 입니다.</p>
+                )}
             </div>
 
             {/* ── 이메일 인증 ── */}

@@ -366,6 +366,20 @@
     font-weight: 700;
 }
 
+.modal-nickname-check {
+    margin-top: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.modal-nickname-check.available {
+    color: #10b981;
+}
+
+.modal-nickname-check.taken {
+    color: #ef4444;
+}
+
 .modal-verify-error {
     margin-top: 4px;
     font-size: 12px;
