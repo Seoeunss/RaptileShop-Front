@@ -84,7 +84,8 @@ export const authApi = {
    * 닉네임 중복 확인
    * GET /api/v1/auth/check-nickname?nickname=xxx
    */
-  checkNickname: async (nickname: string): Promise<{ available: boolean }> => {
+  // data: true = 중복 있음, data: false = 중복 없음(사용가능)
+  checkNickname: async (nickname: string): Promise<boolean> => {
     const res = await api.get('/auth/check-nickname', { params: { nickname } });
     return res.data.data;
   },
