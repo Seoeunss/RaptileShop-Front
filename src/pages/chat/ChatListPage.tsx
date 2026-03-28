@@ -1,13 +1,28 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { chatApi } from '../../services/chatApi';
+import { useAuthStore } from '../../store/authStore';
 import './style/ChatListPage.css';
 
-interface ApiRoom {
+// 실제 API 응답 구조
+interface RawApiRoom {
+    id: number;
+    postId: number;
+    postTitle: string;
+    buyerId: number;
+    sellerId: number;
+    participants: { userId: number; nickname: string; avatarUrl: string | null }[];
+    lastMessage?: string;
+    lastMessageAt?: string;
+    unreadCount?: number;
+}
+
+// 화면 표시용 구조
+interface DisplayRoom {
     id: number;
     partnerName: string;
     productName: string;
-    productPrice: number;
+    productPrice?: number;
     lastMessage?: string;
     lastMessageAt?: string;
     unreadCount: number;
@@ -35,16 +50,32 @@ function formatTime(dateStr?: string): string {
 
 export default function ChatListPage() {
     const navigate = useNavigate();
-    const [rooms, setRooms] = useState<ApiRoom[]>([]);
+    const { user } = useAuthStore();
+    const [rooms, setRooms] = useState<DisplayRoom[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(false);
 
     useEffect(() => {
         chatApi.getRooms()
-            .then((data) => setRooms(data ?? []))
+            .then((data) => {
+                const rawList: RawApiRoom[] = Array.isArray(data) ? data : (data?.content ?? []);
+                const mapped: DisplayRoom[] = rawList.map((r) => {
+                    const partner = r.participants?.find(p => p.userId !== user?.id);
+                    return {
+                        id: r.id,
+                        partnerName: partner?.nickname ?? '',
+                        productName: r.postTitle ?? '',
+                        productPrice: undefined,
+                        lastMessage: r.lastMessage,
+                        lastMessageAt: r.lastMessageAt,
+                        unreadCount: r.unreadCount ?? 0,
+                    };
+                });
+                setRooms(mapped);
+            })
             .catch(() => setError(true))
             .finally(() => setLoading(false));
-    }, []);
+    }, [user]);
 
     const totalUnread = rooms.reduce((sum, r) => sum + (r.unreadCount ?? 0), 0);
 
@@ -116,7 +147,7 @@ export default function ChatListPage() {
                                     <div className="chat-item-bottom">
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
                                             <span className="chat-item-product">
-                                                {room.productName} · {room.productPrice.toLocaleString()}원
+                                                {room.productName}{room.productPrice != null ? ` · ${room.productPrice.toLocaleString()}원` : ''}
                                             </span>
                                             <span className="chat-item-preview">{room.lastMessage ?? ''}</span>
                                         </div>

@@ -1,10 +1,21 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import { chatApi } from '../../services/chatApi';
 import { useStompChat, ChatMessage } from '../../hooks/useStompChat';
 import { useAuthStore } from '../../store/authStore';
 import './style/ChatPage.css';
 
+// 실제 API 응답 구조
+interface RawApiRoom {
+    id: number;
+    postId: number;
+    postTitle: string;
+    buyerId: number;
+    sellerId: number;
+    participants: { userId: number; nickname: string; avatarUrl: string | null }[];
+}
+
+// 화면 표시용 구조
 interface ApiRoom {
     id: number;
     partnerName: string;
@@ -53,9 +64,17 @@ function toDisplayMessage(msg: ChatMessage, currentUserId: number): DisplayMessa
     };
 }
 
+interface LocationState {
+    productName?: string;
+    productPrice?: number;
+    productId?: number;
+}
+
 export default function ChatPage() {
     const { id } = useParams<{ id: string }>();
     const navigate = useNavigate();
+    const location = useLocation();
+    const locationState = (location.state as LocationState) ?? {};
     const { user } = useAuthStore();
     const [room, setRoom] = useState<ApiRoom | null>(null);
     const [messages, setMessages] = useState<DisplayMessage[]>([]);
@@ -81,7 +100,27 @@ export default function ChatPage() {
             chatApi.getMessages(roomId),
         ])
             .then(([rooms, msgsData]) => {
-                const found: ApiRoom | null = rooms?.find((r: ApiRoom) => r.id === roomId) ?? null;
+                const roomList: RawApiRoom[] = Array.isArray(rooms) ? rooms : (rooms?.content ?? []);
+                const rawRoom = roomList.find((r: RawApiRoom) => r.id === roomId);
+                let found: ApiRoom | null = null;
+                if (rawRoom && user) {
+                    const partner = rawRoom.participants.find(p => p.userId !== user.id);
+                    found = {
+                        id: rawRoom.id,
+                        partnerName: partner?.nickname ?? '',
+                        productName: rawRoom.postTitle ?? locationState.productName ?? '',
+                        productPrice: locationState.productPrice ?? 0,
+                        productId: rawRoom.postId ?? locationState.productId ?? 0,
+                    };
+                } else if (locationState.productName) {
+                    found = {
+                        id: roomId,
+                        partnerName: '',
+                        productName: locationState.productName,
+                        productPrice: locationState.productPrice ?? 0,
+                        productId: locationState.productId ?? 0,
+                    };
+                }
                 setRoom(found);
 
                 // 응답이 페이지네이션 형태({ content: [...] }) 또는 배열 모두 처리
@@ -174,7 +213,7 @@ export default function ChatPage() {
                 <div className="chat-header-avatar">{partnerInitial}</div>
                 <div className="chat-header-info">
                     <p className="chat-header-name">{room.partnerName}</p>
-                    <p className="chat-header-sub">{room.productName} · {room.productPrice.toLocaleString()}원</p>
+                    <p className="chat-header-sub">{room.productName}{room.productPrice != null ? ` · ${room.productPrice.toLocaleString()}원` : ''}</p>
                 </div>
             </div>
 
@@ -188,7 +227,7 @@ export default function ChatPage() {
                 </div>
                 <div className="chat-product-info">
                     <p className="chat-product-name">{room.productName}</p>
-                    <p className="chat-product-price">{room.productPrice.toLocaleString()}원</p>
+                    <p className="chat-product-price">{room.productPrice != null ? `${room.productPrice.toLocaleString()}원` : '가격 정보 없음'}</p>
                 </div>
                 <button
                     className="chat-buy-btn"

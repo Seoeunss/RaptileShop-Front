@@ -83,7 +83,13 @@ export default function ProductDetailPage() {
     setInquiryLoading(true);
     try {
       const room = await chatApi.createOrGetRoom(product.id);
-      navigate(`/chat/${room.id}`);
+      navigate(`/chat/${room.id}`, {
+        state: {
+          productName: product.title,
+          productPrice: product.price,
+          productId: product.id,
+        },
+      });
     } catch (err: unknown) {
       const code = (err as any)?.response?.data?.error?.code;
       if (code === 'CHAT_BLOCKED') {
