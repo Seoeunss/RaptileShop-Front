@@ -3,6 +3,7 @@ import HomePage from "../pages/HomePage";
 import ProductListPage from "../pages/product/ProductListPage";
 import ProductDetailPage from "../pages/product/ProductDetailPage";
 import ProductCreatePage from "../pages/product/ProductCreatePage";
+import ProductEditPage from "../pages/product/ProductEditPage";
 import LoginPage from "../pages/auth/LoginPage";
 import SignupPage from "../pages/auth/SignupPage";
 import OrderPage from "../pages/order/OrderPage";
@@ -30,6 +31,7 @@ export const appRoutes: RouteDef[] = [
     { path: "/products", element: <ProductListPage />, headerLabel: "상품목록", bottomLabel: "목록" },
     { path: "/products/new", element: <ProductCreatePage />, headerLabel: "상품등록", bottomLabel: "등록" },
     { path: "/products/:id", element: <ProductDetailPage /> },
+    { path: "/products/:id/edit", element: <ProductEditPage /> },
     { path: "/login", element: <LoginPage /> },
     { path: "/signup", element: <SignupPage /> },
     { path: "/chat", element: <ChatListPage />, headerLabel: "채팅", bottomLabel: "채팅" },
