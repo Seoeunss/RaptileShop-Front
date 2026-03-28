@@ -4,7 +4,7 @@ import Header from "./Header";
 import MobileBottomNav from "./MobileBottomNav";
 import AuthModal from "../components/auth/AuthModal";
 import Sidebar from "../components/layout/Sidebar";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { headerNavItems } from "../router/routes";
 import { useAuthStore } from "../store/authStore";
 import "./style/Layout.css";
@@ -15,9 +15,11 @@ export default function Layout() {
     const [authModal, setAuthModal] = useState<AuthTab>(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const { isAuthenticated, user, clearAuth } = useAuthStore();
+    const navigate = useNavigate();
 
     const handleLogout = () => {
         clearAuth();
+        navigate('/');
     };
 
     return (
