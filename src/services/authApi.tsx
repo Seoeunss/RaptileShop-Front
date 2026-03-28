@@ -79,4 +79,13 @@ export const authApi = {
     const res = await api.post('/auth/email/verify', { email, code });
     return res.data.data;
   },
+
+  /**
+   * 닉네임 중복 확인
+   * GET /api/v1/auth/check-nickname?nickname=xxx
+   */
+  checkNickname: async (nickname: string): Promise<{ available: boolean }> => {
+    const res = await api.get('/auth/check-nickname', { params: { nickname } });
+    return res.data.data;
+  },
 };
