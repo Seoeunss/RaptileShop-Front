@@ -162,8 +162,8 @@ export default function SignupPage() {
     if (!nickname.trim()) return;
     setNicknameCheckStatus('checking');
     try {
-      const result = await authApi.checkNickname(nickname.trim());
-      setNicknameCheckStatus(result.available ? 'available' : 'taken');
+      const isDuplicated = await authApi.checkNickname(nickname.trim());
+      setNicknameCheckStatus(!isDuplicated ? 'available' : 'taken');
     } catch {
       setNicknameCheckStatus('taken');
     }

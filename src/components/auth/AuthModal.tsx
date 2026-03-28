@@ -232,8 +232,8 @@ function SignupForm({ onSwitchTab, onClose }: { onSwitchTab: () => void; onClose
         if (!name.trim()) return;
         setNicknameCheckStatus('checking');
         try {
-            const result = await authApi.checkNickname(name.trim());
-            setNicknameCheckStatus(result.available ? 'available' : 'taken');
+            const isDuplicated = await authApi.checkNickname(name.trim());
+            setNicknameCheckStatus(!isDuplicated ? 'available' : 'taken');
         } catch {
             setNicknameCheckStatus('taken');
         }
