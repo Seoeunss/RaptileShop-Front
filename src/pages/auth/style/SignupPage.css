@@ -114,6 +114,20 @@
     font-weight: 700;
 }
 
+.nickname-check-msg {
+    margin-top: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.nickname-check-msg.available {
+    color: #10b981;
+}
+
+.nickname-check-msg.taken {
+    color: #ef4444;
+}
+
 .verify-error {
     margin-top: 4px;
     font-size: 12px;

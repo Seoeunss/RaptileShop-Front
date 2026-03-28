@@ -42,6 +42,9 @@ export default function SignupPage() {
   const [email,           setEmail]           = useState('');
   const [password,        setPassword]        = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
+
+  // ── 닉네임 중복체크 상태 ──
+  const [nicknameCheckStatus, setNicknameCheckStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   // const [phone,           setPhone]           = useState('');
   // const [carrier,         setCarrier]         = useState('');
 
@@ -150,6 +153,22 @@ export default function SignupPage() {
   //   clearTimer();
   // };
 
+  const handleNicknameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setNickname(e.target.value);
+    if (nicknameCheckStatus !== 'idle') setNicknameCheckStatus('idle');
+  };
+
+  const handleCheckNickname = async () => {
+    if (!nickname.trim()) return;
+    setNicknameCheckStatus('checking');
+    try {
+      const result = await authApi.checkNickname(nickname.trim());
+      setNicknameCheckStatus(result.available ? 'available' : 'taken');
+    } catch {
+      setNicknameCheckStatus('taken');
+    }
+  };
+
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
     if (emailVerificationSent || isEmailVerified) resetEmailVerify();
@@ -243,6 +262,7 @@ export default function SignupPage() {
     setError('');
 
     if (!nickname.trim())             { setError('닉네임을 입력해주세요.'); return; }
+    if (nicknameCheckStatus !== 'available') { setError('닉네임 중복체크를 완료해주세요.'); return; }
     if (!email)                       { setError('이메일을 입력해주세요.'); return; }
     if (password.length < 8)          { setError('비밀번호는 8자 이상이어야 합니다.'); return; }
     if (password !== passwordConfirm) { setError('비밀번호가 일치하지 않습니다.'); return; }
@@ -300,12 +320,27 @@ export default function SignupPage() {
           {/* ── 닉네임 ── */}
           <div className="form-group">
             <label className="form-label" htmlFor="signup-nickname">닉네임</label>
-            <input
-              id="signup-nickname" className="form-input" type="text"
-              placeholder="사용할 닉네임을 입력하세요"
-              value={nickname} onChange={(e) => setNickname(e.target.value)}
-              autoComplete="nickname"
-            />
+            <div className="email-row">
+              <input
+                id="signup-nickname" className="form-input" type="text"
+                placeholder="사용할 닉네임을 입력하세요"
+                value={nickname} onChange={handleNicknameChange}
+                autoComplete="nickname"
+              />
+              <button
+                type="button" className="send-verify-btn"
+                onClick={handleCheckNickname}
+                disabled={nicknameCheckStatus === 'checking' || !nickname.trim()}
+              >
+                {nicknameCheckStatus === 'checking' ? '확인 중...' : '중복체크'}
+              </button>
+            </div>
+            {nicknameCheckStatus === 'available' && (
+              <p className="nickname-check-msg available">사용가능한 닉네임입니다.</p>
+            )}
+            {nicknameCheckStatus === 'taken' && (
+              <p className="nickname-check-msg taken">사용중인 닉네임 입니다.</p>
+            )}
           </div>
 
           {/* ── 이메일 인증 ── */}
