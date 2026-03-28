@@ -5,6 +5,16 @@ import { useAuthStore } from '../../store/authStore';
 import './style/ChatListPage.css';
 
 // 실제 API 응답 구조
+interface LastMessageObj {
+    id: number;
+    roomId: number;
+    type: string;
+    content: string;
+    attachmentUrls: string[];
+    senderId: number;
+    createdAt: string;
+}
+
 interface RawApiRoom {
     id: number;
     postId: number;
@@ -12,9 +22,10 @@ interface RawApiRoom {
     buyerId: number;
     sellerId: number;
     participants: { userId: number; nickname: string; avatarUrl: string | null }[];
-    lastMessage?: string;
-    lastMessageAt?: string;
+    lastMessage?: LastMessageObj;
     unreadCount?: number;
+    createdAt?: string;
+    updatedAt?: string;
 }
 
 // 화면 표시용 구조
@@ -66,8 +77,8 @@ export default function ChatListPage() {
                         partnerName: partner?.nickname ?? '',
                         productName: r.postTitle ?? '',
                         productPrice: undefined,
-                        lastMessage: r.lastMessage,
-                        lastMessageAt: r.lastMessageAt,
+                        lastMessage: r.lastMessage?.content,
+                        lastMessageAt: r.lastMessage?.createdAt,
                         unreadCount: r.unreadCount ?? 0,
                     };
                 });
