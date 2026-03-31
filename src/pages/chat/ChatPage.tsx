@@ -80,6 +80,7 @@ export default function ChatPage() {
     const [messages, setMessages] = useState<DisplayMessage[]>([]);
     const [loading, setLoading] = useState(true);
     const [inputText, setInputText] = useState('');
+    const [isComposing, setIsComposing] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
 
@@ -155,7 +156,7 @@ export default function ChatPage() {
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
+        if (e.key === 'Enter' && !e.shiftKey && !isComposing) {
             e.preventDefault();
             handleSend();
         }
@@ -267,6 +268,8 @@ export default function ChatPage() {
                         placeholder="메시지를 입력하세요"
                         value={inputText}
                         onChange={(e) => setInputText(e.target.value)}
+                        onCompositionStart={() => setIsComposing(true)}
+                        onCompositionEnd={() => setIsComposing(false)}
                         onKeyDown={handleKeyDown}
                         rows={1}
                     />
