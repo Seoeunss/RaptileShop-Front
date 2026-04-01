@@ -435,9 +435,9 @@ button { font-family: inherit; cursor: pointer; }
 
 .hp-feature-grid {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, 1fr);
     gap: 20px;
-    max-width: 520px;
+    max-width: 860px;
     margin: 0 auto;
 }
 
@@ -692,6 +692,7 @@ button { font-family: inherit; cursor: pointer; }
     .hp-hero    { min-height: 460px; padding: 48px 0; }
 
     .hp-cat-grid       { grid-template-columns: repeat(4, 1fr); gap: 10px; }
+    .hp-feature-grid   { grid-template-columns: 1fr; }
     .hp-step-grid      { grid-template-columns: 1fr; }
     .hp-footer__cols   { grid-template-columns: 1fr 1fr; }
 }
