@@ -32,6 +32,20 @@ const features = [
         title: "검증된 판매자",
         desc: "전문가가 직접 확인한 건강한 파충류만 등록할 수 있습니다. 판매자 평점과 리뷰로 신뢰를 직접 확인하세요.",
     },
+    {
+        id: "f2",
+        icon: (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <rect x="2" y="4" width="20" height="16" rx="3" stroke="currentColor" strokeWidth="1.7"/>
+                <path d="M2 8l10 7 10-7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
+                <circle cx="18" cy="7" r="4" fill="#ef4444"/>
+                <path d="M18 5v2.5" stroke="#fff" strokeWidth="1.4" strokeLinecap="round"/>
+                <circle cx="18" cy="9" r="0.7" fill="#fff"/>
+            </svg>
+        ),
+        title: "채팅 미열람 메일 알림",
+        desc: "보낸 메시지를 판매자가 아직 읽지 않았다면 자동으로 이메일 알림을 발송합니다. 놓치는 대화 없이 빠른 소통을 경험하세요.",
+    },
 ];
 
 const steps = [
