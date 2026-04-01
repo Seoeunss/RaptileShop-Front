@@ -1,389 +1,237 @@
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { productApi } from "../services/productApi";
 import "./style/HomePage.css";
 
-type Category = {
-    id: string;
-    name: string;
-    imageUrl: string;
-};
-
-type Feature = {
-    id: string;
+interface Product {
+    id: number;
     title: string;
-    description: string;
-};
-
-type Benefit = {
-    id: string;
-    label: string;
-    title: string;
-    description: string;
-    cta: string;
-    imageUrl?: string;
-};
-
-type Step = {
-    id: string;
-    title: string;
-    description: string;
-    imageUrl?: string;
-};
-
-const categories: Category[] = [
-    {
-        id: "ball",
-        name: "Ball Pythons",
-        imageUrl:
-            "https://images.unsplash.com/photo-1527434000091-3d0b87e7b3b8?auto=format&fit=crop&w=800&q=70",
-    },
-    {
-        id: "boa",
-        name: "Boa Constrictors",
-        imageUrl:
-            "https://images.unsplash.com/photo-1550859492-d5da9d8e45f3?auto=format&fit=crop&w=800&q=70",
-    },
-    {
-        id: "corn",
-        name: "Corn Snakes",
-        imageUrl:
-            "https://images.unsplash.com/photo-1544551763-cedd7fce3b38?auto=format&fit=crop&w=800&q=70",
-    },
-    {
-        id: "bearded",
-        name: "Bearded Dragons",
-        imageUrl:
-            "https://images.unsplash.com/photo-1544207243-4a70a9a4c1b2?auto=format&fit=crop&w=800&q=70",
-    },
-    {
-        id: "crested",
-        name: "Crested Geckos",
-        imageUrl:
-            "https://images.unsplash.com/photo-1581196607303-95ec3c91f71c?auto=format&fit=crop&w=800&q=70",
-    },
-    {
-        id: "leopard",
-        name: "Leopard Geckos",
-        imageUrl:
-            "https://images.unsplash.com/photo-1600699261617-8f1e9c2d563d?auto=format&fit=crop&w=800&q=70",
-    },
-];
-
-const features: Feature[] = [
-    {
-        id: "f1",
-        title: "다양한 품종과\n검증한 판매처",
-        description:
-            "전문가가 직접 검수한 건강한 파충류만 판매합니다.",
-    },
-    {
-        id: "f2",
-        title: "안전한 에스크로\n결제 시스템",
-        description:
-            "구매자·판매자 모두를 보호하는 신뢰의 거래.",
-    },
-    {
-        id: "f3",
-        title: "빠르고 안전한\n배송 서비스",
-        description:
-            "파충류의 건강을 생각한 신속한 배송.",
-    },
-];
-
-const benefits: Benefit[] = [
-    {
-        id: "b1",
-        label: "포인트",
-        title: "매 구매마다 적립\n되는 포인트",
-        description:
-            "구매액의 일정 비율을 포인트로 적립하고 다음 구매에 사용할 수 있습니다.",
-        cta: "자세히",
-        imageUrl: "",
-    },
-    {
-        id: "b2",
-        label: "지원",
-        title: "파충류 케어 정보와\n전문가 상담",
-        description:
-            "반려환경, 건강관리방법부터 사육 환경 조성까지 전문가 도움을 받으세요.",
-        cta: "알아보기",
-        imageUrl: "",
-    },
-];
-
-const steps: Step[] = [
-    {
-        id: "s1",
-        title: "상품 선택 및 주문",
-        description: "마음에 드는 파충류·용품을 찾아 주문합니다.",
-        imageUrl: "",
-    },
-    {
-        id: "s2",
-        title: "에스크로 결제 진행",
-        description:
-            "구매자·판매자 모두 안전한 환경에서 결제를 진행합니다.",
-        imageUrl: "",
-    },
-    {
-        id: "s3",
-        title: "배송 및 수령",
-        description:
-            "파충류의 건강을 생각한 신속한 배송으로 안전하게 받으세요.",
-        imageUrl: "",
-    },
-    // 원하면 4번째 단계도 쉽게 추가 가능:
-    // { id: "s4", title: "거래 확정", description: "수령 후 상태 확인 후 거래를 확정합니다." }
-];
-
-function IconBox() {
-    return (
-        <div className="iconBox" aria-hidden="true">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                <path
-                    d="M4 7.5L12 3l8 4.5v9L12 21l-8-4.5v-9Z"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinejoin="round"
-                />
-                <path
-                    d="M12 21V12"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                />
-                <path
-                    d="M20 7.5l-8 4.5-8-4.5"
-                    stroke="currentColor"
-                    strokeWidth="1.6"
-                    strokeLinejoin="round"
-                />
-            </svg>
-        </div>
-    );
+    species: string;
+    sex: string;
+    region?: string;
+    price?: number;
+    priceNegotiable: boolean;
+    status: string;
+    thumbnailUrl?: string;
+    seller: { id: number; nickname: string };
+    viewCount: number;
 }
 
+/* ── 데이터 ─────────────────────────────────────────── */
+
+
+const features = [
+    {
+        id: "f1",
+        icon: (
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2l7 4v6c0 4.418-3.134 8.547-7 9.9C5.134 20.547 2 16.418 2 12V6l10-4z" stroke="currentColor" strokeWidth="1.7" strokeLinejoin="round"/>
+                <path d="M8 12l3 3 5-5" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+        ),
+        title: "검증된 판매자",
+        desc: "전문가가 직접 확인한 건강한 파충류만 등록할 수 있습니다. 판매자 평점과 리뷰로 신뢰를 직접 확인하세요.",
+    },
+];
+
+const steps = [
+    { num: "01", title: "원하는 파충류 검색",   desc: "종류·가격·지역으로 필터링해 원하는 파충류를 찾아보세요." },
+    { num: "02", title: "판매자와 채팅 문의",   desc: "1:1 채팅으로 건강 상태, 먹이 현황 등 궁금한 점을 직접 확인하세요." },
+    { num: "03", title: "판매자와 직접 거래",     desc: "채팅으로 조건을 협의한 후 판매자와 직접 거래를 완료하세요." },
+];
+
+/* ── 페이지 컴포넌트 ────────────────────────────────── */
+
 export default function HomePage() {
+    const [latestProducts, setLatestProducts] = useState<Product[]>([]);
+    const [productsLoading, setProductsLoading] = useState(true);
+
+    useEffect(() => {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+            setProductsLoading(false);
+            return;
+        }
+        productApi
+            .getList({ page: 0, size: 4, sort: "createdAt,desc", status: "ACTIVE" })
+            .then((data) => setLatestProducts(data.content ?? data))
+            .catch(() => {})
+            .finally(() => setProductsLoading(false));
+    }, []);
+
     return (
-        <div className="page">
-            {/* Hero */}
-            <section className="hero">
-                <div className="container heroInner">
-                    <div className="heroLeft">
-                        <h1 className="heroTitle">
-                            파충류를 만나는
-                            <br />
-                            가장 쉬운 방법
+        <div className="hp">
+
+            {/* ── 히어로 ─────────────────────────────── */}
+            <section className="hp-hero">
+                <div className="hp-hero__overlay" />
+                <div className="hp-container hp-hero__inner">
+                    <div className="hp-hero__copy">
+                        <p className="hp-hero__eyebrow">파충류 마켓플레이스</p>
+                        <h1 className="hp-hero__title">
+                            파충류를 만나는<br />
+                            가장 믿을 수 있는 곳
                         </h1>
-                        <p className="heroDesc">
-                            거래자 더미야닝 등 수많은 한국에서 찾아오기, 에스크로 관련을
-                            안한
-                            <br />
-                            하기 기대합니다.
+                        <p className="hp-hero__desc">
+                            검증된 판매자와 함께하는 신뢰할 수 있는 파충류 거래.<br />
+                            렙타일샵에서 원하는 파충류를 찾아보세요.
                         </p>
-
-                        <div className="heroCtas">
-                            <button className="btn btnPrimary">둘러보기</button>
-                            <button className="btn btnGhost">판매</button>
-                        </div>
-                    </div>
-
-                    <div className="heroRight">
-                        <div className="videoCard" role="button" tabIndex={0}>
-                            <div className="videoOverlay" />
-                            <div className="playButton" aria-label="영상 재생">
-                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-                                    <path
-                                        d="M10 8l8 4-8 4V8Z"
-                                        fill="currentColor"
-                                    />
-                                </svg>
-                            </div>
+                        <div className="hp-hero__ctas">
+                            <Link to="/products" className="hp-btn hp-btn--primary">매물 둘러보기</Link>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Popular Categories */}
-            <section className="section" id="tips">
-                <div className="container">
-                    <div className="sectionHeader">
-                        <h2 className="sectionTitle">인기 카테고리</h2>
-                        <a className="sectionLink" href="#all-categories">
-                            전체보기
-                        </a>
+
+
+{/* ── 최신 매물 ───────────────────────────── */}
+            <section className="hp-section hp-section--tint hp-latest">
+                <div className="hp-container">
+                    <div className="hp-section__head">
+                        <h2 className="hp-section__title">최신 매물</h2>
+                        <Link to="/products" className="hp-section__more">더 보기 →</Link>
                     </div>
 
-                    <div className="categoryGrid" role="list">
-                        {categories.map((c) => (
-                            <article className="categoryCard" key={c.id} role="listitem">
-                                <div
-                                    className="categoryThumb"
-                                    style={{ backgroundImage: `url(${c.imageUrl})` }}
-                                    aria-hidden="true"
-                                />
-                                <div className="categoryName">{c.name}</div>
-                            </article>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Why Us */}
-            <section className="section sectionTint" id="notice">
-                <div className="container">
-                    <div className="centerHeader">
-                        <div className="eyebrow">핵심 강점</div>
-                        <h2 className="bigTitle">우리가 다른 이유</h2>
-                        <p className="subText">국내 최고의 파충류 플랫폼을 완성했습니다</p>
-                    </div>
-
-                    <div className="featureGrid">
-                        {features.map((f) => (
-                            <article className="featureCard" key={f.id}>
-                                <IconBox />
-                                <h3 className="featureTitle">{f.title}</h3>
-                                <p className="featureDesc">{f.description}</p>
-                                <button className="linkBtn">더보기 &nbsp;&gt;</button>
-                            </article>
-                        ))}
-                    </div>
-                </div>
-            </section>
-
-            {/* Member Benefits */}
-            <section className="section sectionTint" id="support">
-                <div className="container">
-                    <div className="centerHeader">
-                        <div className="eyebrow">혜택</div>
-                        <h2 className="bigTitle">회원이 누리는 특별한 가치</h2>
-                        <p className="subText">
-                            가입부터 시작되는 다양한 혜택으로 더 저렴하게 구매하세요
-                        </p>
-                    </div>
-
-                    <div className="benefitGrid">
-                        {benefits.map((b) => (
-                            <article className="benefitCard" key={b.id}>
-                                <div className="benefitMedia" aria-hidden="true">
-                                    <div className="mediaPlaceholder">
-                                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-                                            <path
-                                                d="M4 6a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6Z"
-                                                stroke="currentColor"
-                                                strokeWidth="1.6"
-                                            />
-                                            <path
-                                                d="M8 14l2.6-2.6a1 1 0 0 1 1.4 0L16 15.4"
-                                                stroke="currentColor"
-                                                strokeWidth="1.6"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            />
-                                            <path
-                                                d="M14.5 13.5l1-1a1 1 0 0 1 1.4 0L20 15.6"
-                                                stroke="currentColor"
-                                                strokeWidth="1.6"
-                                                strokeLinecap="round"
-                                                strokeLinejoin="round"
-                                            />
-                                        </svg>
+                    {productsLoading ? (
+                        <div className="hp-product-grid">
+                            {[1, 2, 3, 4].map((n) => (
+                                <div className="hp-product-card hp-product-card--skeleton" key={n}>
+                                    <div className="hp-product-card__img-wrap">
+                                        <div className="hp-product-card__img hp-skeleton" />
+                                    </div>
+                                    <div className="hp-product-card__body">
+                                        <div className="hp-skeleton hp-skeleton--text" />
+                                        <div className="hp-skeleton hp-skeleton--text hp-skeleton--short" />
                                     </div>
                                 </div>
+                            ))}
+                        </div>
+                    ) : !localStorage.getItem("accessToken") ? (
+                        <div className="hp-empty">
+                            <p className="hp-empty__text">등록된 매물을 확인하시려면 로그인을 해주세요.</p>
+                            <Link to="/login" className="hp-btn hp-btn--primary">로그인하기</Link>
+                        </div>
+                    ) : latestProducts.length === 0 ? (
+                        <div className="hp-empty">
+                            <p className="hp-empty__text">아직 등록된 매물이 없습니다.</p>
+                            <Link to="/products" className="hp-btn hp-btn--primary">매물 목록 보기</Link>
+                        </div>
+                    ) : (
+                        <div className="hp-product-grid">
+                            {latestProducts.map((p) => (
+                                <Link to={`/products/${p.id}`} className="hp-product-card" key={p.id}>
+                                    <div className="hp-product-card__img-wrap">
+                                        {p.thumbnailUrl ? (
+                                            <img
+                                                className="hp-product-card__img hp-product-card__img--real"
+                                                src={p.thumbnailUrl}
+                                                alt={p.title}
+                                            />
+                                        ) : (
+                                            <div className="hp-product-card__img hp-product-card__img--placeholder">
+                                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                                                    <path d="M4 7.5L12 3l8 4.5v9L12 21l-8-4.5v-9Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                                                </svg>
+                                            </div>
+                                        )}
+                                        <span className="hp-product-card__species">{p.species}</span>
+                                    </div>
+                                    <div className="hp-product-card__body">
+                                        <p className="hp-product-card__name">{p.title}</p>
+                                        <div className="hp-product-card__meta">
+                                            {p.region && <span className="hp-product-card__region">{p.region}</span>}
+                                            <span className="hp-product-card__seller">@{p.seller.nickname}</span>
+                                        </div>
+                                        <p className="hp-product-card__price">
+                                            {p.priceNegotiable
+                                                ? "가격 협의"
+                                                : p.price != null
+                                                ? `₩${p.price.toLocaleString()}`
+                                                : "가격 미정"}
+                                        </p>
+                                    </div>
+                                </Link>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </section>
 
-                                <div className="benefitBody">
-                                    <div className="benefitLabel">{b.label}</div>
-                                    <h3 className="benefitTitle">{b.title}</h3>
-                                    <p className="benefitDesc">{b.description}</p>
-                                    <button className="linkBtn">{b.cta} &nbsp;&gt;</button>
-                                </div>
-                            </article>
+{/* ── 서비스 특징 ──────────────────────────── */}
+            <section className="hp-section hp-features">
+                <div className="hp-container">
+                    <div className="hp-section__center">
+                        <p className="hp-eyebrow">렙타일샵이 다른 이유</p>
+                        <h2 className="hp-section__big-title">안전하고 신뢰할 수 있는<br />파충류 거래 플랫폼</h2>
+                    </div>
+                    <div className="hp-feature-grid">
+                        {features.map((f) => (
+                            <div className="hp-feature-card" key={f.id}>
+                                <div className="hp-feature-card__icon">{f.icon}</div>
+                                <h3 className="hp-feature-card__title">{f.title}</h3>
+                                <p className="hp-feature-card__desc">{f.desc}</p>
+                            </div>
                         ))}
                     </div>
                 </div>
             </section>
 
-            {/* Steps */}
-            <section className="section sectionTint" id="mypage">
-                <div className="container">
-                    <div className="centerHeader">
-                        <div className="eyebrow">과정</div>
-                        <h2 className="bigTitle">네 단계로 시작하는 쉬운 구매</h2>
-                        <p className="subText">
-                            원하는 파충류를 찾아 장바구니에 담고, 안전한 에스크로로 결제로
-                            구매하세요. 판매자 확인 후 빠르게 배송됩니다.
-                        </p>
-                    </div>
 
-                    <div className="stepGrid">
-                        {steps.map((s) => (
-                            <article className="stepCard" key={s.id}>
-                                <div className="stepMedia" aria-hidden="true">
-                                    <div className="mediaPlaceholder" />
-                                </div>
-                                <h3 className="stepTitle">{s.title}</h3>
-                                <p className="stepDesc">{s.description}</p>
-                            </article>
+{/* ── 이용 방법 ────────────────────────────── */}
+            <section className="hp-section hp-section--tint hp-steps">
+                <div className="hp-container">
+                    <div className="hp-section__center">
+                        <p className="hp-eyebrow">이용 방법</p>
+                        <h2 className="hp-section__big-title">3단계로 시작하는<br />쉬운 파충류 구매</h2>
+                    </div>
+                    <div className="hp-step-grid">
+                        {steps.map((s, i) => (
+                            <div className="hp-step-card" key={s.num}>
+                                <div className="hp-step-card__num">{s.num}</div>
+                                {i < steps.length - 1 && <div className="hp-step-arrow">→</div>}
+                                <h3 className="hp-step-card__title">{s.title}</h3>
+                                <p className="hp-step-card__desc">{s.desc}</p>
+                            </div>
                         ))}
                     </div>
-
-                    <div className="stepActions">
-                        <button className="btn btnGhostSmall">확인</button>
-                        <button className="linkBtn">자세히 &nbsp;&gt;</button>
+                    <div className="hp-step-actions">
+                        <Link to="/products" className="hp-btn hp-btn--primary">지금 시작하기</Link>
                     </div>
                 </div>
             </section>
 
-            {/* Footer */}
-            <footer className="footer" id="login">
-                <div className="container footerInner">
-                    <div className="footerBrand">
-                        <div className="brand">
-                            <div className="logoMark" aria-hidden="true" />
-                            <span className="logoText">Logo</span>
+{/* ── 푸터 ────────────────────────────────── */}
+            <footer className="hp-footer">
+                <div className="hp-container hp-footer__inner">
+                    <div className="hp-footer__brand">
+                        <div className="hp-logo">
+                            <div className="hp-logo__mark" />
+                            <span className="hp-logo__text">렙타일샵</span>
                         </div>
-                        <p className="footerDesc">
-                            파충류를 사랑하는 모든 이들의 거래 플랫폼
-                        </p>
+                        <p className="hp-footer__tagline">파충류를 사랑하는 모든 이들의 거래 플랫폼</p>
                     </div>
-
-                    <div className="footerCols">
-                        <div className="footerCol">
-                            <div className="footerTitle">서비스</div>
-                            <a className="footerLink" href="#tips">
-                                실용팁
-                            </a>
-                            <a className="footerLink" href="#notice">
-                                공지사항
-                            </a>
-                            <a className="footerLink" href="#support">
-                                고객센터
-                            </a>
+                    <div className="hp-footer__cols">
+                        <div>
+                            <p className="hp-footer__col-title">서비스</p>
+                            <Link to="/products" className="hp-footer__link">매물 목록</Link>
+                            <Link to="/support" className="hp-footer__link">고객센터</Link>
                         </div>
-
-                        <div className="footerCol">
-                            <div className="footerTitle">계정</div>
-                            <a className="footerLink" href="#mypage">
-                                마이룸
-                            </a>
-                            <a className="footerLink" href="#login">
-                                로그인
-                            </a>
-                            <a className="footerLink" href="#signup">
-                                회원가입
-                            </a>
+                        <div>
+                            <p className="hp-footer__col-title">계정</p>
+                            <Link to="/login" className="hp-footer__link">로그인</Link>
+                            <Link to="/signup" className="hp-footer__link">회원가입</Link>
+                            <Link to="/chat" className="hp-footer__link">채팅</Link>
                         </div>
-
-                        <div className="footerCol">
-                            <div className="footerTitle">문의</div>
-                            <div className="footerMeta">이메일: support@example.com</div>
-                            <div className="footerMeta">전화: 02-1234-5678</div>
+                        <div>
+                            <p className="hp-footer__col-title">문의</p>
+                            <p className="hp-footer__meta">이메일: support@reptileshop.kr</p>
+                            <p className="hp-footer__meta">운영시간: 평일 10:00–18:00</p>
                         </div>
                     </div>
                 </div>
-
-                <div className="footerBottom">
-                    <div className="container footerBottomInner">
-                        © 2026 파충류 마켓플레이스. All rights reserved.
-                    </div>
+                <div className="hp-footer__bottom">
+                    <div className="hp-container">© 2026 렙타일샵. All rights reserved.</div>
                 </div>
             </footer>
         </div>

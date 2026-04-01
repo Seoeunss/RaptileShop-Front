@@ -6,6 +6,7 @@ import ProductCreatePage from "../pages/product/ProductCreatePage";
 import ProductEditPage from "../pages/product/ProductEditPage";
 import LoginPage from "../pages/auth/LoginPage";
 import SignupPage from "../pages/auth/SignupPage";
+import ChangePasswordPage from "../pages/auth/ChangePasswordPage";
 import OrderPage from "../pages/order/OrderPage";
 import PaymentSuccessPage from "../pages/payments/PaymentSuccessPage";
 import PaymentFailPage from "../pages/payments/PaymentFailPage";
@@ -29,11 +30,12 @@ export type NavItem = {
 export const appRoutes: RouteDef[] = [
     { path: "/", element: <HomePage />, bottomLabel: "홈" },
     { path: "/products", element: <ProductListPage />, headerLabel: "상품목록", bottomLabel: "목록" },
-    { path: "/products/new", element: <ProductCreatePage />, headerLabel: "상품등록", bottomLabel: "등록" },
+    { path: "/products/new", element: <ProductCreatePage /> },
     { path: "/products/:id", element: <ProductDetailPage /> },
     { path: "/products/:id/edit", element: <ProductEditPage /> },
     { path: "/login", element: <LoginPage /> },
     { path: "/signup", element: <SignupPage /> },
+    { path: "/change-password", element: <ChangePasswordPage /> },
     { path: "/chat", element: <ChatListPage />, headerLabel: "채팅", bottomLabel: "채팅" },
     { path: "/chat/:id", element: <ChatPage /> },
     { path: "/orders/:id", element: <OrderPage /> },

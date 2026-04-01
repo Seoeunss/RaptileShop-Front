@@ -9,6 +9,7 @@ export interface User {
   avatarUrl?: string;
   role: string;
   status: string;
+  mustChangePassword?: boolean;
 }
 
 interface AuthState {

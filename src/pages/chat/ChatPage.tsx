@@ -232,9 +232,9 @@ export default function ChatPage() {
                 </div>
                 <button
                     className="chat-buy-btn"
-                    onClick={() => navigate(`/orders/${room.productId}`)}
+                    onClick={() => navigate(`/products/${room.productId}`)}
                 >
-                    구매하기
+                    매물 보기
                 </button>
             </div>
 

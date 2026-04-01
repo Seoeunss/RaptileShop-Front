@@ -89,4 +89,34 @@ export const authApi = {
     const res = await api.get('/auth/check-nickname', { params: { nickname } });
     return res.data.data;
   },
+
+  /**
+   * 아이디(이메일) 찾기
+   * POST /api/v1/auth/find-email
+   * body: { nickname }
+   */
+  findEmail: async (nickname: string): Promise<string> => {
+    const res = await api.post('/auth/find-email', { nickname });
+    return res.data.data.email;
+  },
+
+  /**
+   * 비밀번호 찾기 (임시비밀번호 이메일 발송)
+   * POST /api/v1/auth/reset-password
+   * body: { nickname, email }
+   */
+  resetPassword: async (nickname: string, email: string): Promise<void> => {
+    await api.post('/auth/reset-password', { nickname, email });
+  },
+
+  /**
+   * 비밀번호 변경 (JWT 필요)
+   * POST /api/v1/auth/change-password
+   * body: { newPassword }
+   */
+  changePassword: async (newPassword: string, token: string): Promise<void> => {
+    await api.post('/auth/change-password', { newPassword }, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+  },
 };
