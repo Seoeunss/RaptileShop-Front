@@ -50,6 +50,8 @@ function strengthText(s: number) {
     return { label: '', color: '' };
 }
 
+type SubModal = 'findEmail' | 'findPassword' | null;
+
 /* ───────── 로그인 폼 ───────── */
 function LoginForm({ onSwitchTab, onClose }: { onSwitchTab: () => void; onClose: () => void }) {
     const navigate  = useNavigate();
@@ -59,6 +61,54 @@ function LoginForm({ onSwitchTab, onClose }: { onSwitchTab: () => void; onClose:
     const [password, setPassword] = useState('');
     const [error,    setError]    = useState('');
     const [loading,  setLoading]  = useState(false);
+
+    // 아이디 찾기 / 비밀번호 찾기 서브 모달
+    const [subModal,       setSubModal]       = useState<SubModal>(null);
+    const [findNickname,   setFindNickname]   = useState('');
+    const [foundEmail,     setFoundEmail]     = useState('');
+    const [findEmailErr,   setFindEmailErr]   = useState('');
+    const [findEmailLoad,  setFindEmailLoad]  = useState(false);
+    const [resetNickname,  setResetNickname]  = useState('');
+    const [resetEmail,     setResetEmail]     = useState('');
+    const [resetSent,      setResetSent]      = useState(false);
+    const [resetErr,       setResetErr]       = useState('');
+    const [resetLoad,      setResetLoad]      = useState(false);
+
+    const openSubModal = (type: SubModal) => {
+        setSubModal(type);
+        setFindNickname(''); setFoundEmail(''); setFindEmailErr('');
+        setResetNickname(''); setResetEmail(''); setResetSent(false); setResetErr('');
+    };
+
+    const handleFindEmail = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setFindEmailErr('');
+        if (!findNickname.trim()) { setFindEmailErr('닉네임을 입력해주세요.'); return; }
+        setFindEmailLoad(true);
+        try {
+            const found = await authApi.findEmail(findNickname.trim());
+            setFoundEmail(found);
+        } catch {
+            setFindEmailErr('해당 닉네임으로 가입된 계정을 찾을 수 없습니다.');
+        } finally {
+            setFindEmailLoad(false);
+        }
+    };
+
+    const handleResetPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setResetErr('');
+        if (!resetNickname.trim() || !resetEmail.trim()) { setResetErr('닉네임과 이메일을 모두 입력해주세요.'); return; }
+        setResetLoad(true);
+        try {
+            await authApi.resetPassword(resetNickname.trim(), resetEmail.trim());
+            setResetSent(true);
+        } catch {
+            setResetErr('입력하신 정보와 일치하는 계정을 찾을 수 없습니다.');
+        } finally {
+            setResetLoad(false);
+        }
+    };
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -85,6 +135,7 @@ function LoginForm({ onSwitchTab, onClose }: { onSwitchTab: () => void; onClose:
     };
 
     return (
+        <>
         <form className="modal-form" onSubmit={handleSubmit}>
             <div className="modal-form-group">
                 <label className="modal-label" htmlFor="m-email">이메일</label>
@@ -112,8 +163,9 @@ function LoginForm({ onSwitchTab, onClose }: { onSwitchTab: () => void; onClose:
                 />
             </div>
 
-            <div className="modal-footer-row">
-                <button type="button" className="modal-link-btn">비밀번호 찾기</button>
+            <div className="modal-footer-row" style={{ justifyContent: 'space-between' }}>
+                <button type="button" className="modal-link-btn" onClick={() => openSubModal('findEmail')}>아이디 찾기</button>
+                <button type="button" className="modal-link-btn" onClick={() => openSubModal('findPassword')}>비밀번호 찾기</button>
             </div>
 
             {error && <p className="modal-error">{error}</p>}
@@ -129,6 +181,95 @@ function LoginForm({ onSwitchTab, onClose }: { onSwitchTab: () => void; onClose:
                 </button>
             </p>
         </form>
+
+        {/* ── 아이디 찾기 서브 모달 ── */}
+        {subModal === 'findEmail' && (
+            <div className="auth-modal-backdrop" onClick={() => setSubModal(null)} style={{ zIndex: 1100 }}>
+                <div className="auth-modal-card" style={{ maxWidth: 380 }} onClick={(e) => e.stopPropagation()}>
+                    <button className="auth-modal-close" onClick={() => setSubModal(null)} aria-label="닫기">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                            <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                    </button>
+                    <h2 style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 800 }}>아이디 찾기</h2>
+                    <p style={{ margin: '0 0 18px', fontSize: 13, color: '#64748b' }}>가입 시 등록한 닉네임을 입력해주세요.</p>
+                    {!foundEmail ? (
+                        <form onSubmit={handleFindEmail} className="modal-form" style={{ gap: 12 }}>
+                            <div className="modal-form-group">
+                                <label className="modal-label">닉네임</label>
+                                <input
+                                    className="modal-input"
+                                    placeholder="닉네임을 입력하세요"
+                                    value={findNickname}
+                                    onChange={(e) => setFindNickname(e.target.value)}
+                                />
+                            </div>
+                            {findEmailErr && <p className="modal-error">{findEmailErr}</p>}
+                            <button type="submit" className="modal-submit-btn" disabled={findEmailLoad}>
+                                {findEmailLoad ? '조회 중...' : '아이디 찾기'}
+                            </button>
+                        </form>
+                    ) : (
+                        <div style={{ textAlign: 'center', padding: '8px 0 4px' }}>
+                            <p style={{ margin: '0 0 4px', fontSize: 13, color: '#64748b' }}>회원님의 아이디(이메일)는</p>
+                            <p style={{ margin: '0 0 4px', fontSize: 17, fontWeight: 800, color: '#0f172a' }}>{foundEmail}</p>
+                            <p style={{ margin: '0 0 20px', fontSize: 13, color: '#64748b' }}>입니다.</p>
+                            <button className="modal-submit-btn" onClick={() => setSubModal(null)}>확인</button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        )}
+
+        {/* ── 비밀번호 찾기 서브 모달 ── */}
+        {subModal === 'findPassword' && (
+            <div className="auth-modal-backdrop" onClick={() => setSubModal(null)} style={{ zIndex: 1100 }}>
+                <div className="auth-modal-card" style={{ maxWidth: 380 }} onClick={(e) => e.stopPropagation()}>
+                    <button className="auth-modal-close" onClick={() => setSubModal(null)} aria-label="닫기">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                            <path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        </svg>
+                    </button>
+                    <h2 style={{ margin: '0 0 6px', fontSize: 18, fontWeight: 800 }}>비밀번호 찾기</h2>
+                    <p style={{ margin: '0 0 18px', fontSize: 13, color: '#64748b' }}>닉네임과 가입한 이메일을 입력하면 임시비밀번호를 발송해 드립니다.</p>
+                    {!resetSent ? (
+                        <form onSubmit={handleResetPassword} className="modal-form" style={{ gap: 12 }}>
+                            <div className="modal-form-group">
+                                <label className="modal-label">닉네임</label>
+                                <input
+                                    className="modal-input"
+                                    placeholder="닉네임을 입력하세요"
+                                    value={resetNickname}
+                                    onChange={(e) => setResetNickname(e.target.value)}
+                                />
+                            </div>
+                            <div className="modal-form-group">
+                                <label className="modal-label">이메일</label>
+                                <input
+                                    className="modal-input"
+                                    type="email"
+                                    placeholder="가입한 이메일을 입력하세요"
+                                    value={resetEmail}
+                                    onChange={(e) => setResetEmail(e.target.value)}
+                                />
+                            </div>
+                            {resetErr && <p className="modal-error">{resetErr}</p>}
+                            <button type="submit" className="modal-submit-btn" disabled={resetLoad}>
+                                {resetLoad ? '발송 중...' : '임시 비밀번호 받기'}
+                            </button>
+                        </form>
+                    ) : (
+                        <div style={{ textAlign: 'center', padding: '8px 0 4px' }}>
+                            <p style={{ margin: '0 0 4px', fontSize: 13, color: '#64748b' }}>임시 비밀번호를</p>
+                            <p style={{ margin: '0 0 4px', fontSize: 17, fontWeight: 800, color: '#0f172a' }}>{resetEmail}</p>
+                            <p style={{ margin: '0 0 20px', fontSize: 13, color: '#64748b' }}>으로 발송했습니다.</p>
+                            <button className="modal-submit-btn" onClick={() => setSubModal(null)}>확인</button>
+                        </div>
+                    )}
+                </div>
+            </div>
+        )}
+        </>
     );
 }
 
