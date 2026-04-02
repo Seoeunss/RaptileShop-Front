@@ -56,6 +56,7 @@ export default function ProductDetailPage() {
   const [error,        setError]        = useState('');
   const [activeImg,    setActiveImg]    = useState(0);
   const [inquiryLoading, setInquiryLoading] = useState(false);
+  const [deleteLoading,  setDeleteLoading]  = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -113,6 +114,22 @@ export default function ProductDetailPage() {
       ...(product.imageUrls ?? []),
     ])
   );
+
+  const handleDelete = async () => {
+    if (!product) return;
+    if (!window.confirm('정말 이 매물을 삭제하시겠습니까?')) return;
+
+    setDeleteLoading(true);
+    try {
+      await productApi.delete(product.id);
+      alert('매물이 삭제되었습니다.');
+      navigate('/products');
+    } catch {
+      alert('매물 삭제 중 오류가 발생했습니다.');
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
 
   const isSoldOrClosed = product.status === 'SOLD' || product.status === 'CLOSED';
   const isOwner = user?.id === product.seller.id;
@@ -235,13 +252,23 @@ export default function ProductDetailPage() {
           {/* 액션 버튼 */}
           <div className="detail-actions">
             {isOwner ? (
-              <button
-                className="inquiry-btn"
-                style={{ background: '#374151' }}
-                onClick={() => navigate(`/products/${product.id}/edit`)}
-              >
-                매물 수정
-              </button>
+              <>
+                <button
+                  className="inquiry-btn"
+                  style={{ background: '#374151' }}
+                  onClick={() => navigate(`/products/${product.id}/edit`)}
+                >
+                  매물 수정
+                </button>
+                <button
+                  className="inquiry-btn"
+                  style={{ background: '#dc2626' }}
+                  disabled={deleteLoading}
+                  onClick={handleDelete}
+                >
+                  {deleteLoading ? '삭제 중...' : '매물 삭제'}
+                </button>
+              </>
             ) : (
               <button
                 className="inquiry-btn"
