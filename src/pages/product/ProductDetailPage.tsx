@@ -26,10 +26,13 @@ interface ProductDetail {
   status: string;
   thumbnailUrl?: string;
   imageUrls: string[];
+  videoUrls?: string[];
   seller: Seller;
   viewCount: number;
   createdAt: string;
 }
+
+const isVideoUrl = (url: string) => /\.(mp4|mov|webm|avi|mkv|m4v)(\?|$)/i.test(url);
 
 const SEX_LABEL: Record<string, string> = {
   MALE: '수컷', FEMALE: '암컷', UNKNOWN: '미확인',
@@ -107,11 +110,12 @@ export default function ProductDetailPage() {
   if (error)   return <div className="detail-error">{error}</div>;
   if (!product) return <div className="detail-error">매물을 찾을 수 없습니다.</div>;
 
-  // 이미지 목록 (thumbnailUrl + imageUrls 합산, 중복 제거)
-  const allImages = Array.from(
+  // 미디어 목록 (thumbnailUrl + imageUrls + videoUrl 합산, 중복 제거)
+  const allMedia = Array.from(
     new Set([
       ...(product.thumbnailUrl ? [product.thumbnailUrl] : []),
       ...(product.imageUrls ?? []),
+      ...(product.videoUrls ?? []),
     ])
   );
 
@@ -142,25 +146,47 @@ export default function ProductDetailPage() {
       </button>
 
       <div className="product-detail-body">
-        {/* ── 이미지 영역 ── */}
+        {/* ── 이미지/동영상 영역 ── */}
         <div className="product-detail-image-area">
-          {allImages.length > 0 ? (
+          {allMedia.length > 0 ? (
             <>
-              <img
-                className="product-detail-main-img"
-                src={allImages[activeImg]}
-                alt={product.title}
-              />
-              {allImages.length > 1 && (
+              {isVideoUrl(allMedia[activeImg]) ? (
+                <video
+                  className="product-detail-main-img"
+                  src={allMedia[activeImg]}
+                  controls
+                  autoPlay
+                  loop
+                  muted
+                />
+              ) : (
+                <img
+                  className="product-detail-main-img"
+                  src={allMedia[activeImg]}
+                  alt={product.title}
+                />
+              )}
+              {allMedia.length > 1 && (
                 <div className="product-detail-thumbs">
-                  {allImages.map((url, i) => (
-                    <img
-                      key={i}
-                      className={`product-detail-thumb ${activeImg === i ? 'active' : ''}`}
-                      src={url}
-                      alt={`이미지 ${i + 1}`}
-                      onClick={() => setActiveImg(i)}
-                    />
+                  {allMedia.map((url, i) => (
+                    isVideoUrl(url) ? (
+                      <div
+                        key={i}
+                        className={`product-detail-thumb ${activeImg === i ? 'active' : ''}`}
+                        onClick={() => setActiveImg(i)}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1e293b', cursor: 'pointer', fontSize: '1.5rem' }}
+                      >
+                        ▶
+                      </div>
+                    ) : (
+                      <img
+                        key={i}
+                        className={`product-detail-thumb ${activeImg === i ? 'active' : ''}`}
+                        src={url}
+                        alt={`이미지 ${i + 1}`}
+                        onClick={() => setActiveImg(i)}
+                      />
+                    )
                   ))}
                 </div>
               )}

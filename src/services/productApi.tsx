@@ -25,6 +25,7 @@ export interface ProductCreateData {
   priceNegotiable: boolean;
   description: string;
   imageUrls: string[];
+  videoUrls?: string[];
 }
 
 export const productApi = {
