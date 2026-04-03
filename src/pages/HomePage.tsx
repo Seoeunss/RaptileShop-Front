@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { productApi } from "../services/productApi";
+import { useAuthStore } from "../store/authStore";
 import "./style/HomePage.css";
 
 interface Product {
@@ -59,19 +60,16 @@ const steps = [
 export default function HomePage() {
     const [latestProducts, setLatestProducts] = useState<Product[]>([]);
     const [productsLoading, setProductsLoading] = useState(true);
+    const { isAuthenticated } = useAuthStore();
 
     useEffect(() => {
-        const token = localStorage.getItem("accessToken");
-        if (!token) {
-            setProductsLoading(false);
-            return;
-        }
+        setProductsLoading(true);
         productApi
             .getList({ page: 0, size: 4, sort: "createdAt,desc", status: "ACTIVE" })
             .then((data) => setLatestProducts(data.content ?? data))
-            .catch(() => {})
+            .catch(() => setLatestProducts([]))
             .finally(() => setProductsLoading(false));
-    }, []);
+    }, [isAuthenticated]);
 
     return (
         <div className="hp">
@@ -120,11 +118,6 @@ export default function HomePage() {
                                     </div>
                                 </div>
                             ))}
-                        </div>
-                    ) : !localStorage.getItem("accessToken") ? (
-                        <div className="hp-empty">
-                            <p className="hp-empty__text">등록된 매물을 확인하시려면 로그인을 해주세요.</p>
-                            <Link to="/login" className="hp-btn hp-btn--primary">로그인하기</Link>
                         </div>
                     ) : latestProducts.length === 0 ? (
                         <div className="hp-empty">

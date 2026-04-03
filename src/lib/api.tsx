@@ -23,8 +23,12 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('accessToken');
-      window.location.href = '/login';
+      const url = error.config?.url ?? '';
+      const isPublicProduct = /^\/products(\/\d+)?$/.test(url);
+      if (!isPublicProduct) {
+        localStorage.removeItem('accessToken');
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
