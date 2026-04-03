@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
+
+const isVideoUrl = (url: string) => /\.(mp4|mov|webm|avi|mkv|m4v)(\?|$)/i.test(url);
 import { useNavigate, useParams } from 'react-router-dom';
 import { productApi } from '../../services/productApi';
 import { uploadApi } from '../../services/uploadApi';
@@ -91,11 +93,19 @@ export default function ProductEditPage() {
     setSubmitting(true);
     setError('');
     try {
-      const uploadedUrls: string[] = [];
+      const newImageUrls: string[] = [];
+      const newVideoUrls: string[] = [];
       for (const item of newMediaItems) {
         const url = await uploadApi.uploadImage(item.file);
-        uploadedUrls.push(url);
+        if (item.isVideo) {
+          newVideoUrls.push(url);
+        } else {
+          newImageUrls.push(url);
+        }
       }
+      const existingImageUrls = existingUrls.filter(url => !isVideoUrl(url));
+      const existingVideoUrls = existingUrls.filter(url => isVideoUrl(url));
+      const finalVideoUrls = [...existingVideoUrls, ...newVideoUrls];
       await productApi.update(Number(id), {
         title: title.trim(),
         species: species.trim(),
@@ -106,7 +116,8 @@ export default function ProductEditPage() {
         price: price ? Number(price) : undefined,
         priceNegotiable: priceNeg,
         description: description.trim(),
-        imageUrls: [...existingUrls, ...uploadedUrls],
+        imageUrls: [...existingImageUrls, ...newImageUrls],
+        videoUrls: finalVideoUrls.length > 0 ? finalVideoUrls : undefined,
       });
       navigate(`/products/${id}`);
     } catch {
@@ -143,10 +154,17 @@ export default function ProductEditPage() {
           <h2 className="create-section-title">사진 / 동영상</h2>
 
           <div className="media-grid">
-            {/* 기존 이미지 */}
+            {/* 기존 이미지/동영상 */}
             {existingUrls.map((url, i) => (
               <div key={`existing-${i}`} className="media-preview-item">
-                <img src={url} alt={`이미지 ${i + 1}`} />
+                {isVideoUrl(url) ? (
+                  <>
+                    <video src={url} />
+                    <span className="media-type-badge">▶</span>
+                  </>
+                ) : (
+                  <img src={url} alt={`이미지 ${i + 1}`} />
+                )}
                 {i === 0 && newMediaItems.length === 0 && (
                   <span className="media-main-badge">대표</span>
                 )}
@@ -300,7 +318,7 @@ export default function ProductEditPage() {
                 value={morphInput}
                 onChange={e => setMorphInput(e.target.value)}
                 onKeyDown={e => {
-                  if (e.key === 'Enter') { e.preventDefault(); addMorphTag(); }
+                  if (e.key === 'Enter' && !e.nativeEvent.isComposing) { e.preventDefault(); addMorphTag(); }
                 }}
                 placeholder="예: Pastel, Het Clown (Enter로 추가)"
               />

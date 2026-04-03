@@ -64,9 +64,14 @@ export default function ProductCreatePage() {
     setError('');
     try {
       const imageUrls: string[] = [];
+      const videoUrls: string[] = [];
       for (const item of mediaItems) {
         const url = await uploadApi.uploadImage(item.file);
-        imageUrls.push(url);
+        if (item.isVideo) {
+          videoUrls.push(url);
+        } else {
+          imageUrls.push(url);
+        }
       }
       await productApi.create({
         title: title.trim(),
@@ -79,6 +84,7 @@ export default function ProductCreatePage() {
         priceNegotiable: priceNeg,
         description: description.trim(),
         imageUrls,
+        videoUrls: videoUrls.length > 0 ? videoUrls : undefined,
       });
       navigate('/products');
     } catch {
@@ -245,7 +251,7 @@ export default function ProductCreatePage() {
                 value={morphInput}
                 onChange={e => setMorphInput(e.target.value)}
                 onKeyDown={e => {
-                  if (e.key === 'Enter') { e.preventDefault(); addMorphTag(); }
+                  if (e.key === 'Enter' && !e.nativeEvent.isComposing) { e.preventDefault(); addMorphTag(); }
                 }}
                 placeholder="예: Pastel, Het Clown (Enter로 추가)"
               />
