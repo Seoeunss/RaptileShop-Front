@@ -51,7 +51,7 @@ export default function ProductEditPage() {
         setPriceNeg(data.priceNegotiable ?? false);
         setDescription(data.description ?? '');
         setMorphTags(data.morphTags ?? []);
-        setExistingUrls(data.imageUrls ?? []);
+        setExistingUrls([...(data.imageUrls ?? []), ...(data.videoUrls ?? [])]);
       })
       .catch(() => setError('매물 정보를 불러오지 못했습니다.'))
       .finally(() => setLoading(false));
@@ -93,19 +93,11 @@ export default function ProductEditPage() {
     setSubmitting(true);
     setError('');
     try {
-      const newImageUrls: string[] = [];
-      const newVideoUrls: string[] = [];
+      const newUrls: string[] = [];
       for (const item of newMediaItems) {
         const url = await uploadApi.uploadImage(item.file);
-        if (item.isVideo) {
-          newVideoUrls.push(url);
-        } else {
-          newImageUrls.push(url);
-        }
+        newUrls.push(url);
       }
-      const existingImageUrls = existingUrls.filter(url => !isVideoUrl(url));
-      const existingVideoUrls = existingUrls.filter(url => isVideoUrl(url));
-      const finalVideoUrls = [...existingVideoUrls, ...newVideoUrls];
       await productApi.update(Number(id), {
         title: title.trim(),
         species: species.trim(),
@@ -116,8 +108,7 @@ export default function ProductEditPage() {
         price: price ? Number(price) : undefined,
         priceNegotiable: priceNeg,
         description: description.trim(),
-        imageUrls: [...existingImageUrls, ...newImageUrls],
-        videoUrls: finalVideoUrls.length > 0 ? finalVideoUrls : undefined,
+        imageUrls: [...existingUrls, ...newUrls],
       });
       navigate(`/products/${id}`);
     } catch {
