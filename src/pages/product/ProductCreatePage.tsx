@@ -63,15 +63,10 @@ export default function ProductCreatePage() {
     setSubmitting(true);
     setError('');
     try {
-      const imageUrls: string[] = [];
-      const videoUrls: string[] = [];
+      const allUrls: string[] = [];
       for (const item of mediaItems) {
         const url = await uploadApi.uploadImage(item.file);
-        if (item.isVideo) {
-          videoUrls.push(url);
-        } else {
-          imageUrls.push(url);
-        }
+        allUrls.push(url);
       }
       await productApi.create({
         title: title.trim(),
@@ -83,8 +78,7 @@ export default function ProductCreatePage() {
         price: price ? Number(price) : undefined,
         priceNegotiable: priceNeg,
         description: description.trim(),
-        imageUrls,
-        videoUrls: videoUrls.length > 0 ? videoUrls : undefined,
+        imageUrls: allUrls,
       });
       navigate('/products');
     } catch {
