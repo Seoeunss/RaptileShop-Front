@@ -1,7 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { productApi } from '../../services/productApi';
+import VideoThumbnail from '../../components/VideoThumbnail';
 import './style/productList.css';
+
+const isVideoUrl = (url: string) => /\.(mp4|mov|webm|avi|mkv|m4v)(\?|$)/i.test(url);
 
 interface Seller { id: number; nickname: string; }
 interface Product {
@@ -110,7 +113,9 @@ export default function ProductListPage() {
               <div key={p.id} className="product-card" onClick={() => navigate(`/products/${p.id}`)}>
                 <div className="image-wrapper">
                   {p.thumbnailUrl
-                    ? <img className="card-img" src={p.thumbnailUrl} alt={p.title} />
+                    ? isVideoUrl(p.thumbnailUrl)
+                      ? <VideoThumbnail src={p.thumbnailUrl} className="card-img" />
+                      : <img className="card-img" src={p.thumbnailUrl} alt={p.title} />
                     : <span className="card-img-placeholder">🦎</span>
                   }
                 </div>

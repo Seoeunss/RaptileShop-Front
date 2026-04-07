@@ -4,6 +4,7 @@ const isVideoUrl = (url: string) => /\.(mp4|mov|webm|avi|mkv|m4v)(\?|$)/i.test(u
 import { useNavigate, useParams } from 'react-router-dom';
 import { productApi } from '../../services/productApi';
 import { uploadApi } from '../../services/uploadApi';
+import VideoThumbnail from '../../components/VideoThumbnail';
 import './style/ProductCreatePage.css';
 
 interface MediaItem {
@@ -177,10 +178,7 @@ export default function ProductEditPage() {
             {existingUrls.map((url, i) => (
               <div key={`existing-${i}`} className="media-preview-item">
                 {isVideoUrl(url) ? (
-                  <>
-                    <video src={url} />
-                    <span className="media-type-badge">▶</span>
-                  </>
+                  <VideoThumbnail src={url} overlayStyle={{ fontSize: '1rem' }} />
                 ) : (
                   <img src={url} alt={`이미지 ${i + 1}`} />
                 )}
