@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { productApi } from '../../services/productApi';
+import VideoThumbnail from '../../components/VideoThumbnail';
 import './style/productList.css';
 
 const isVideoUrl = (url: string) => /\.(mp4|mov|webm|avi|mkv|m4v)(\?|$)/i.test(url);
@@ -113,18 +114,7 @@ export default function ProductListPage() {
                 <div className="image-wrapper">
                   {p.thumbnailUrl
                     ? isVideoUrl(p.thumbnailUrl)
-                      ? (
-                        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
-                          <video
-                            className="card-img"
-                            src={p.thumbnailUrl}
-                            preload="metadata"
-                            muted
-                            playsInline
-                          />
-                          <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.5rem', background: 'rgba(0,0,0,0.3)' }}>▶</span>
-                        </div>
-                      )
+                      ? <VideoThumbnail src={p.thumbnailUrl} className="card-img" />
                       : <img className="card-img" src={p.thumbnailUrl} alt={p.title} />
                     : <span className="card-img-placeholder">🦎</span>
                   }

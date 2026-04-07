@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { productApi } from '../../services/productApi';
 import { chatApi } from '../../services/chatApi';
 import { useAuthStore } from '../../store/authStore';
+import VideoThumbnail from '../../components/VideoThumbnail';
 import './style/ProductDetailPage.css';
 
 interface Seller {
@@ -174,16 +175,9 @@ export default function ProductDetailPage() {
                         key={i}
                         className={`product-detail-thumb ${activeImg === i ? 'active' : ''}`}
                         onClick={() => setActiveImg(i)}
-                        style={{ position: 'relative', cursor: 'pointer', overflow: 'hidden' }}
+                        style={{ cursor: 'pointer', overflow: 'hidden' }}
                       >
-                        <video
-                          src={url}
-                          preload="metadata"
-                          muted
-                          playsInline
-                          style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                        />
-                        <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.2rem', background: 'rgba(0,0,0,0.3)' }}>▶</span>
+                        <VideoThumbnail src={url} overlayStyle={{ fontSize: '1.2rem' }} />
                       </div>
                     ) : (
                       <img
