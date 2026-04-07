@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import { productApi } from '../../services/productApi';
 import './style/productList.css';
 
+const isVideoUrl = (url: string) => /\.(mp4|mov|webm|avi|mkv|m4v)(\?|$)/i.test(url);
+
 interface Seller { id: number; nickname: string; }
 interface Product {
   id: number;
@@ -110,7 +112,20 @@ export default function ProductListPage() {
               <div key={p.id} className="product-card" onClick={() => navigate(`/products/${p.id}`)}>
                 <div className="image-wrapper">
                   {p.thumbnailUrl
-                    ? <img className="card-img" src={p.thumbnailUrl} alt={p.title} />
+                    ? isVideoUrl(p.thumbnailUrl)
+                      ? (
+                        <div style={{ position: 'relative', width: '100%', height: '100%' }}>
+                          <video
+                            className="card-img"
+                            src={p.thumbnailUrl}
+                            preload="metadata"
+                            muted
+                            playsInline
+                          />
+                          <span style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontSize: '1.5rem', background: 'rgba(0,0,0,0.3)' }}>▶</span>
+                        </div>
+                      )
+                      : <img className="card-img" src={p.thumbnailUrl} alt={p.title} />
                     : <span className="card-img-placeholder">🦎</span>
                   }
                 </div>
