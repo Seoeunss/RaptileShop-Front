@@ -10,7 +10,29 @@ interface MediaItem {
   file: File;
   previewUrl: string;
   isVideo: boolean;
+  thumbnailUrl?: string;
 }
+
+const generateVideoThumbnail = (file: File): Promise<string> =>
+  new Promise((resolve) => {
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.muted = true;
+    const url = URL.createObjectURL(file);
+    video.src = url;
+    video.addEventListener('loadedmetadata', () => {
+      video.currentTime = video.duration > 0.5 ? 0.5 : 0;
+    }, { once: true });
+    video.addEventListener('seeked', () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = video.videoWidth || 320;
+      canvas.height = video.videoHeight || 240;
+      canvas.getContext('2d')!.drawImage(video, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL('image/jpeg', 0.7));
+    }, { once: true });
+    video.addEventListener('error', () => { URL.revokeObjectURL(url); resolve(''); }, { once: true });
+  });
 
 export default function ProductEditPage() {
   const { id } = useParams<{ id: string }>();
@@ -57,13 +79,19 @@ export default function ProductEditPage() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  const addFiles = (files: FileList | null) => {
+  const addFiles = async (files: FileList | null) => {
     if (!files) return;
-    const items: MediaItem[] = Array.from(files).map(f => ({
-      file: f,
-      previewUrl: URL.createObjectURL(f),
-      isVideo: f.type.startsWith('video/'),
-    }));
+    const items = await Promise.all(
+      Array.from(files).map(async (f) => {
+        const isVideo = f.type.startsWith('video/');
+        return {
+          file: f,
+          previewUrl: URL.createObjectURL(f),
+          isVideo,
+          thumbnailUrl: isVideo ? await generateVideoThumbnail(f) : undefined,
+        };
+      })
+    );
     setNewMediaItems(prev => [...prev, ...items].slice(0, 10 - existingUrls.length));
   };
 
@@ -174,7 +202,7 @@ export default function ProductEditPage() {
               <div key={`new-${i}`} className="media-preview-item">
                 {m.isVideo ? (
                   <>
-                    <video src={m.previewUrl} />
+                    <video src={m.previewUrl} poster={m.thumbnailUrl} />
                     <span className="media-type-badge">▶</span>
                   </>
                 ) : (
