@@ -18,6 +18,7 @@ interface Product {
   status: string;
   thumbnailUrl?: string;
   imageUrls?: string[];
+  videoUrls?: string[];
   seller: Seller;
   viewCount: number;
 }
@@ -114,7 +115,7 @@ export default function ProductListPage() {
               <div key={p.id} className="product-card" onClick={() => navigate(`/products/${p.id}`)}>
                 <div className="image-wrapper">
                   {(() => {
-                    const mediaUrl = p.thumbnailUrl || p.imageUrls?.[0];
+                    const mediaUrl = p.thumbnailUrl || p.imageUrls?.[0] || p.videoUrls?.[0];
                     if (!mediaUrl) return <span className="card-img-placeholder">🦎</span>;
                     if (isVideoUrl(mediaUrl)) return <VideoThumbnail src={mediaUrl} className="card-img" />;
                     return <img className="card-img" src={mediaUrl} alt={p.title} />;
