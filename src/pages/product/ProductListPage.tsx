@@ -17,6 +17,7 @@ interface Product {
   priceNegotiable: boolean;
   status: string;
   thumbnailUrl?: string;
+  imageUrls?: string[];
   seller: Seller;
   viewCount: number;
 }
@@ -112,12 +113,12 @@ export default function ProductListPage() {
             {products.map((p) => (
               <div key={p.id} className="product-card" onClick={() => navigate(`/products/${p.id}`)}>
                 <div className="image-wrapper">
-                  {p.thumbnailUrl
-                    ? isVideoUrl(p.thumbnailUrl)
-                      ? <VideoThumbnail src={p.thumbnailUrl} className="card-img" />
-                      : <img className="card-img" src={p.thumbnailUrl} alt={p.title} />
-                    : <span className="card-img-placeholder">🦎</span>
-                  }
+                  {(() => {
+                    const mediaUrl = p.thumbnailUrl || p.imageUrls?.[0];
+                    if (!mediaUrl) return <span className="card-img-placeholder">🦎</span>;
+                    if (isVideoUrl(mediaUrl)) return <VideoThumbnail src={mediaUrl} className="card-img" />;
+                    return <img className="card-img" src={mediaUrl} alt={p.title} />;
+                  })()}
                 </div>
                 <div className="product-info">
                   <h2 className="product-name">{p.title}</h2>
