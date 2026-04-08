@@ -26,6 +26,7 @@ interface ProductDetail {
   status: string;
   thumbnailUrl?: string;
   imageUrls: string[];
+  videoUrl?: string;
   seller: Seller;
   viewCount: number;
   createdAt: string;
@@ -107,13 +108,18 @@ export default function ProductDetailPage() {
   if (error)   return <div className="detail-error">{error}</div>;
   if (!product) return <div className="detail-error">매물을 찾을 수 없습니다.</div>;
 
-  // 이미지 목록 (thumbnailUrl + imageUrls 합산, 중복 제거)
+  // 미디어 목록 (thumbnailUrl + imageUrls 합산, 중복 제거 후 videoUrl 추가)
   const allImages = Array.from(
     new Set([
       ...(product.thumbnailUrl ? [product.thumbnailUrl] : []),
       ...(product.imageUrls ?? []),
     ])
   );
+  interface MediaItem { url: string; isVideo: boolean; }
+  const allMedia: MediaItem[] = [
+    ...allImages.map((url) => ({ url, isVideo: false })),
+    ...(product.videoUrl ? [{ url: product.videoUrl, isVideo: true }] : []),
+  ];
 
   const handleDelete = async () => {
     if (!product) return;
@@ -144,23 +150,42 @@ export default function ProductDetailPage() {
       <div className="product-detail-body">
         {/* ── 이미지 영역 ── */}
         <div className="product-detail-image-area">
-          {allImages.length > 0 ? (
+          {allMedia.length > 0 ? (
             <>
-              <img
-                className="product-detail-main-img"
-                src={allImages[activeImg]}
-                alt={product.title}
-              />
-              {allImages.length > 1 && (
+              {allMedia[activeImg].isVideo ? (
+                <video
+                  className="product-detail-main-img"
+                  src={allMedia[activeImg].url}
+                  controls
+                />
+              ) : (
+                <img
+                  className="product-detail-main-img"
+                  src={allMedia[activeImg].url}
+                  alt={product.title}
+                />
+              )}
+              {allMedia.length > 1 && (
                 <div className="product-detail-thumbs">
-                  {allImages.map((url, i) => (
-                    <img
-                      key={i}
-                      className={`product-detail-thumb ${activeImg === i ? 'active' : ''}`}
-                      src={url}
-                      alt={`이미지 ${i + 1}`}
-                      onClick={() => setActiveImg(i)}
-                    />
+                  {allMedia.map((item, i) => (
+                    item.isVideo ? (
+                      <div
+                        key={i}
+                        className={`product-detail-thumb ${activeImg === i ? 'active' : ''}`}
+                        style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#1f2937', cursor: 'pointer' }}
+                        onClick={() => setActiveImg(i)}
+                      >
+                        ▶
+                      </div>
+                    ) : (
+                      <img
+                        key={i}
+                        className={`product-detail-thumb ${activeImg === i ? 'active' : ''}`}
+                        src={item.url}
+                        alt={`이미지 ${i + 1}`}
+                        onClick={() => setActiveImg(i)}
+                      />
+                    )
                   ))}
                 </div>
               )}
