@@ -23,7 +23,7 @@ interface AuthState {
 
 const storedUser = (() => {
   try {
-    const raw = localStorage.getItem('authUser');
+    const raw = sessionStorage.getItem('authUser');
     return raw ? (JSON.parse(raw) as User) : null;
   } catch {
     return null;
@@ -32,25 +32,25 @@ const storedUser = (() => {
 
 export const useAuthStore = create<AuthState>((set) => ({
   user: storedUser,
-  accessToken: localStorage.getItem('accessToken'),
-  isAuthenticated: !!localStorage.getItem('accessToken'),
+  accessToken: sessionStorage.getItem('accessToken'),
+  isAuthenticated: !!sessionStorage.getItem('accessToken'),
 
   setAuth: (user, token) => {
-    localStorage.setItem('accessToken', token);
-    localStorage.setItem('authUser', JSON.stringify(user));
+    sessionStorage.setItem('accessToken', token);
+    sessionStorage.setItem('authUser', JSON.stringify(user));
     set({ user, accessToken: token, isAuthenticated: true });
   },
 
   clearAuth: () => {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('authUser');
+    sessionStorage.removeItem('accessToken');
+    sessionStorage.removeItem('authUser');
     set({ user: null, accessToken: null, isAuthenticated: false });
   },
 
   initAuth: () => {
-    const token = localStorage.getItem('accessToken');
+    const token = sessionStorage.getItem('accessToken');
     if (!token) {
-      localStorage.removeItem('authUser');
+      sessionStorage.removeItem('authUser');
       set({ user: null, accessToken: null, isAuthenticated: false });
     }
   },
