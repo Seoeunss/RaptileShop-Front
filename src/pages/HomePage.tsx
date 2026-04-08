@@ -2,7 +2,10 @@ import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { productApi } from "../services/productApi";
 import { useAuthStore } from "../store/authStore";
+import VideoThumbnail from "../components/VideoThumbnail";
 import "./style/HomePage.css";
+
+const isVideoUrl = (url: string) => /\.(mp4|mov|webm|avi|mkv|m4v)(\?|$)/i.test(url);
 
 interface Product {
     id: number;
@@ -14,6 +17,8 @@ interface Product {
     priceNegotiable: boolean;
     status: string;
     thumbnailUrl?: string;
+    imageUrls?: string[];
+    videoUrls?: string[];
     seller: { id: number; nickname: string };
     viewCount: number;
 }
@@ -129,19 +134,22 @@ export default function HomePage() {
                             {latestProducts.map((p) => (
                                 <Link to={`/products/${p.id}`} className="hp-product-card" key={p.id}>
                                     <div className="hp-product-card__img-wrap">
-                                        {p.thumbnailUrl ? (
-                                            <img
-                                                className="hp-product-card__img hp-product-card__img--real"
-                                                src={p.thumbnailUrl}
-                                                alt={p.title}
-                                            />
-                                        ) : (
-                                            <div className="hp-product-card__img hp-product-card__img--placeholder">
-                                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
-                                                    <path d="M4 7.5L12 3l8 4.5v9L12 21l-8-4.5v-9Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
-                                                </svg>
-                                            </div>
-                                        )}
+                                        {(() => {
+                                            const mediaUrl = p.thumbnailUrl || p.imageUrls?.[0] || p.videoUrls?.[0];
+                                            if (!mediaUrl) return (
+                                                <div className="hp-product-card__img hp-product-card__img--placeholder">
+                                                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+                                                        <path d="M4 7.5L12 3l8 4.5v9L12 21l-8-4.5v-9Z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+                                                    </svg>
+                                                </div>
+                                            );
+                                            if (isVideoUrl(mediaUrl)) return (
+                                                <VideoThumbnail src={mediaUrl} className="hp-product-card__img hp-product-card__img--real" />
+                                            );
+                                            return (
+                                                <img className="hp-product-card__img hp-product-card__img--real" src={mediaUrl} alt={p.title} />
+                                            );
+                                        })()}
                                         <span className="hp-product-card__species">{p.species}</span>
                                     </div>
                                     <div className="hp-product-card__body">

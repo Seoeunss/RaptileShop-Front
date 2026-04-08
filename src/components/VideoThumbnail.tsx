@@ -11,10 +11,14 @@ export default function VideoThumbnail({ src, className, style, overlayStyle }: 
       <video
         src={src}
         muted
-        preload="auto"
+        preload="metadata"
         playsInline
         className={className}
         style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+        onLoadedMetadata={(e) => {
+          const v = e.currentTarget;
+          v.currentTime = v.duration > 0.5 ? 0.5 : 0;
+        }}
       />
       <span
         style={{
