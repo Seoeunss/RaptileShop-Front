@@ -23,7 +23,7 @@ export function useStompChat({ roomId, onMessage }: UseStompChatOptions) {
   const clientRef = useRef<Client | null>(null);
 
   const connect = useCallback(() => {
-    const token = localStorage.getItem('accessToken');
+    const token = sessionStorage.getItem('accessToken');
     if (!token || !roomId) return;
 
     const client = new Client({

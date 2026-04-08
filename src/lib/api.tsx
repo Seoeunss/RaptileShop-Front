@@ -11,7 +11,7 @@ const api = axios.create({
 // 요청 인터셉터 - JWT 자동 주입
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken');
+    const token = sessionStorage.getItem('accessToken');
     if (token) config.headers.Authorization = `Bearer ${token}`;
     return config;
   },
@@ -26,7 +26,7 @@ api.interceptors.response.use(
       const url = error.config?.url ?? '';
       const isPublicProduct = /^\/products(\/\d+)?$/.test(url);
       if (!isPublicProduct) {
-        localStorage.removeItem('accessToken');
+        sessionStorage.removeItem('accessToken');
         window.location.href = '/login';
       }
     }
