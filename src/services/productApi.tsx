@@ -28,8 +28,19 @@ export interface ProductCreateData {
 }
 
 export const productApi = {
-  getList: (params: ProductFilter = {}) =>
-    api.get('/products', { params }).then((r) => r.data.data),
+  getList: (params: ProductFilter = {}) => {
+    const { page, size, sort } = params;
+    const body = {
+      q: params.q ?? '',
+      species: params.species ?? '',
+      region: params.region ?? '',
+      status: params.status ?? '',
+    };
+
+    return api
+      .post('/products/search', body, { params: { page, size, sort } })
+      .then((r) => r.data.data);
+  },
 
   getDetail: (productId: number) =>
     api.get(`/products/${productId}`).then((r) => r.data.data),
