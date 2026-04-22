@@ -1,8 +1,8 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { productApi } from '../../services/productApi';
 import VideoThumbnail from '../../components/VideoThumbnail';
-import './style/productList.css';
+import './style/ProductList.css';
 
 const isVideoUrl = (url: string) => /\.(mp4|mov|webm|avi|mkv|m4v)(\?|$)/i.test(url);
 
@@ -35,23 +35,67 @@ export default function ProductListPage() {
   const [loading,    setLoading]    = useState(false);
   const [error,      setError]      = useState('');
   const [totalPages, setTotalPages] = useState(0);
-  const [q,        setQ]        = useState('');
-  const [species,  setSpecies]  = useState('');
-  const [sex,      setSex]      = useState('');
-  const [priceMin, setPriceMin] = useState('');
-  const [priceMax, setPriceMax] = useState('');
-  const [page,     setPage]     = useState(0);
+  const [q,         setQ]        = useState('');
+  const [species,   setSpecies]  = useState('');
+  const [morphTags, setMorphTags] = useState<string[]>([]);
+  const [morphInput, setMorphInput] = useState('');
+  const [sex,       setSex]      = useState('');
+  const [priceMin,  setPriceMin] = useState('');
+  const [priceMax,  setPriceMax] = useState('');
+  const [page,      setPage]     = useState(0);
+
+  // 모프 태그 자동완성
+  const [morphSuggestions, setMorphSuggestions] = useState<string[]>([]);
+  const [showMorphSugg,    setShowMorphSugg]    = useState(false);
+  const morphDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const morphWrapRef     = useRef<HTMLDivElement>(null);
+
+  // 모프 태그 입력 핸들러 (debounce 300ms)
+  const handleMorphInput = (value: string) => {
+    setMorphInput(value);
+    if (morphDebounceRef.current) clearTimeout(morphDebounceRef.current);
+    if (!value.trim()) { setMorphSuggestions([]); setShowMorphSugg(false); return; }
+    morphDebounceRef.current = setTimeout(async () => {
+      try {
+        const list = await productApi.getMorphTags(value.trim());
+        setMorphSuggestions(list);
+        setShowMorphSugg(list.length > 0);
+      } catch { setMorphSuggestions([]); setShowMorphSugg(false); }
+    }, 300);
+  };
+
+  const handleMorphSelect = (tag: string) => {
+    if (!morphTags.includes(tag)) setMorphTags((prev) => [...prev, tag]);
+    setMorphInput('');
+    setShowMorphSugg(false);
+  };
+
+  const removeMorphTag = (tag: string) => {
+    setMorphTags((prev) => prev.filter((t) => t !== tag));
+  };
+
+  // 외부 클릭 시 드롭다운 닫기
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (morphWrapRef.current && !morphWrapRef.current.contains(e.target as Node)) {
+        setShowMorphSugg(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
       const res = await productApi.getList({
-        q:        q        || undefined,
-        species:  species  || undefined,
-        sex:      sex      || undefined,
-        priceMin: priceMin ? Number(priceMin) : undefined,
-        priceMax: priceMax ? Number(priceMax) : undefined,
+        q:         q       || undefined,
+        species:   species || undefined,
+        morphTags: morphTags.length > 0 ? morphTags : undefined,
+        sex:       sex     || undefined,
+        priceMin:  priceMin ? Number(priceMin) : undefined,
+        priceMax:  priceMax ? Number(priceMax) : undefined,
         page,
         size: 12,
         sort: 'createdAt,desc',
@@ -63,12 +107,12 @@ export default function ProductListPage() {
     } finally {
       setLoading(false);
     }
-  }, [q, species, sex, priceMin, priceMax, page]);
+  }, [q, species, morphTags, sex, priceMin, priceMax, page]);
 
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
   const handleSearch = (e: React.FormEvent) => { e.preventDefault(); setPage(0); fetchProducts(); };
-  const handleReset  = () => { setQ(''); setSpecies(''); setSex(''); setPriceMin(''); setPriceMax(''); setPage(0); };
+  const handleReset  = () => { setQ(''); setSpecies(''); setMorphTags([]); setMorphInput(''); setSex(''); setPriceMin(''); setPriceMax(''); setPage(0); setMorphSuggestions([]); setShowMorphSugg(false); };
 
   return (
     <section className="product-page">
@@ -81,6 +125,58 @@ export default function ProductListPage() {
             value={q} onChange={(e) => setQ(e.target.value)} />
           <input className="filter-input" placeholder="종 (Ball Python 등)"
             value={species} onChange={(e) => setSpecies(e.target.value)} />
+
+          {/* 모프 태그 자동완성 */}
+          <div className="morph-autocomplete-wrap" ref={morphWrapRef} style={{ position: 'relative', flex: '1 1 100%' }}>
+            {/* 선택된 태그 칩 */}
+            {morphTags.length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 6 }}>
+                {morphTags.map((tag) => (
+                  <span key={tag} style={{
+                    display: 'inline-flex', alignItems: 'center', gap: 4,
+                    background: '#10b98130', border: '1px solid #10b981',
+                    borderRadius: 20, padding: '3px 10px', fontSize: 12, color: '#10b981',
+                  }}>
+                    {tag}
+                    <button
+                      type="button"
+                      onClick={() => removeMorphTag(tag)}
+                      style={{ background: 'none', border: 'none', color: '#10b981', cursor: 'pointer', padding: 0, fontSize: 14, lineHeight: 1 }}
+                    >×</button>
+                  </span>
+                ))}
+              </div>
+            )}
+            <input
+              className="filter-input"
+              placeholder="모프 태그 (예: Albino)"
+              value={morphInput}
+              onChange={(e) => handleMorphInput(e.target.value)}
+              onFocus={() => morphSuggestions.length > 0 && setShowMorphSugg(true)}
+              autoComplete="off"
+              style={{ width: '100%', boxSizing: 'border-box' }}
+            />
+            {showMorphSugg && (
+              <ul style={{
+                position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0,
+                background: '#1f2937', border: '1px solid #374151', borderRadius: 8,
+                margin: 0, padding: '4px 0', listStyle: 'none', zIndex: 200,
+                maxHeight: 200, overflowY: 'auto',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+              }}>
+                {morphSuggestions.map((tag) => (
+                  <li key={tag}
+                    style={{ padding: '8px 14px', fontSize: 13, color: '#f9fafb', cursor: 'pointer' }}
+                    onMouseEnter={(e) => (e.currentTarget.style.background = '#10b98120')}
+                    onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+                    onMouseDown={(e) => { e.preventDefault(); handleMorphSelect(tag); }}>
+                    {tag}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
           <select className="filter-select" value={sex} onChange={(e) => setSex(e.target.value)}>
             <option value="">성별 전체</option>
             <option value="MALE">수컷</option>

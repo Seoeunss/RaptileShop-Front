@@ -7,7 +7,19 @@
       "Bash(powershell -Command \"New-Item -ItemType Junction -Path 'C:\\\\workspace\\\\RaptileShop-Front\\\\.claude\\\\worktrees\\\\admiring-darwin-1fa5ed\\\\node_modules' -Target 'C:\\\\workspace\\\\RaptileShop-Front\\\\node_modules'\")",
       "Bash(npx vite *)",
       "Bash(curl -s http://localhost:5173/)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173/)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173/)",
+      "Bash(find /Users/seoeunjang/IdeaProjects/RaptileShop-Front/src -type f \\\\\\(-name *[Ss]ign* -o -name *[Rr]egister* -o -name *[Aa]uth* -o -name *[Ll]ogin* \\\\\\))",
+      "Bash(grep -r \"이용약관\\\\|개인정보\\\\|terms\\\\|privacy\" /Users/seoeunjang/IdeaProjects/RaptileShop-Front/src --include=*.tsx --include=*.ts)",
+      "WebSearch",
+      "WebFetch(domain:creativestudio.kr)",
+      "WebFetch(domain:hacoona.com)",
+      "WebFetch(domain:crabland.com)",
+      "WebFetch(domain:www.lotteshopping.com)",
+      "WebFetch(domain:www.koreanlii.or.kr)",
+      "WebFetch(domain:www.horseride.co.kr)",
+      "WebFetch(domain:hcnp.co.kr)",
+      "WebFetch(domain:koreascience.kr)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

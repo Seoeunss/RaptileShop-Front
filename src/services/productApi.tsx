@@ -3,7 +3,7 @@ import api from '../lib/api';
 export interface ProductFilter {
   q?: string;
   species?: string;
-  morphTag?: string;
+  morphTags?: string[];
   region?: string;
   sex?: string;
   priceMin?: number;
@@ -33,7 +33,11 @@ export const productApi = {
     const body = {
       q: params.q ?? '',
       species: params.species ?? '',
+      morphTags: params.morphTags ?? [],
       region: params.region ?? '',
+      sex: params.sex ?? '',
+      priceMin: params.priceMin ?? null,
+      priceMax: params.priceMax ?? null,
       status: params.status ?? '',
     };
 
@@ -41,6 +45,9 @@ export const productApi = {
       .post('/products/search', body, { params: { page, size, sort } })
       .then((r) => r.data.data);
   },
+
+  getMorphTags: (q?: string): Promise<string[]> =>
+    api.get('/products/morph-tags', { params: q ? { q } : {} }).then((r) => r.data.data),
 
   getDetail: (productId: number) =>
     api.get(`/products/${productId}`).then((r) => r.data.data),
