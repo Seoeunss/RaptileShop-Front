@@ -164,6 +164,31 @@
     font-weight: 600;
 }
 
+.sidebarDivider {
+    height: 1px;
+    background: var(--line);
+    margin: 8px 16px;
+}
+
+.sidebarAdminLabel {
+    padding: 6px 16px 2px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.sidebarAdminItem {
+    color: var(--primary) !important;
+    font-size: 0.875rem;
+}
+
+.sidebarAdminItem.active {
+    background: var(--tint) !important;
+    color: var(--primary) !important;
+}
+
 /* 모바일에서 사이드바 폭 조정 */
 @media (max-width: 768px) {
     .drawerSidebar {

@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Bash(cmd /c mklink /J \"C:\\\\workspace\\\\RaptileShop-Front\\\\.claude\\\\worktrees\\\\admiring-darwin-1fa5ed\\\\node_modules\" \"C:\\\\workspace\\\\RaptileShop-Front\\\\node_modules\")",
+      "Bash(cmd /c \"dir C:\\\\workspace\\\\RaptileShop-Front\\\\.claude\\\\worktrees\\\\admiring-darwin-1fa5ed | findstr node_modules\")",
+      "Bash(powershell -Command \"New-Item -ItemType Junction -Path 'C:\\\\workspace\\\\RaptileShop-Front\\\\.claude\\\\worktrees\\\\admiring-darwin-1fa5ed\\\\node_modules' -Target 'C:\\\\workspace\\\\RaptileShop-Front\\\\node_modules'\")",
+      "Bash(npx vite *)",
+      "Bash(curl -s http://localhost:5173/)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173/)"
+    ]
+  }
+}

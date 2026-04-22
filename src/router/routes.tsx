@@ -13,6 +13,8 @@ import PaymentFailPage from "../pages/payments/PaymentFailPage";
 import ChatListPage from "../pages/chat/ChatListPage";
 import ChatPage from "../pages/chat/ChatPage";
 import SupportPage from "../pages/SupportPage";
+import GeneticsCalculatorPage from "../pages/genetics/GeneticsCalculatorPage";
+import GeneticsAdminPage from "../pages/genetics/GeneticsAdminPage";
 import type {JSX} from "react";
 
 export type RouteDef = {
@@ -37,6 +39,8 @@ export const appRoutes: RouteDef[] = [
     { path: "/signup", element: <SignupPage /> },
     { path: "/change-password", element: <ChangePasswordPage /> },
     { path: "/chat", element: <ChatListPage />, headerLabel: "채팅", bottomLabel: "채팅" },
+    { path: "/genetics", element: <GeneticsCalculatorPage />, headerLabel: "유전자 계산기" },
+    { path: "/genetics/admin", element: <GeneticsAdminPage /> },
     { path: "/chat/:id", element: <ChatPage /> },
     { path: "/orders/:id", element: <OrderPage /> },
     { path: "/payment/success", element: <PaymentSuccessPage /> },

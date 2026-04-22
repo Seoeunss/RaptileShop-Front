@@ -1,0 +1,85 @@
+{
+  "hash": "5be0b129",
+  "configHash": "11d90fba",
+  "lockfileHash": "0884299e",
+  "browserHash": "12725ecb",
+  "optimized": {
+    "react": {
+      "src": "../../../../../node_modules/react/index.js",
+      "file": "react.js",
+      "fileHash": "c12766a0",
+      "needsInterop": true
+    },
+    "react-dom": {
+      "src": "../../../../../node_modules/react-dom/index.js",
+      "file": "react-dom.js",
+      "fileHash": "841b8f2d",
+      "needsInterop": true
+    },
+    "react/jsx-runtime": {
+      "src": "../../../../../node_modules/react/jsx-runtime.js",
+      "file": "react_jsx-runtime.js",
+      "fileHash": "1ce450db",
+      "needsInterop": true
+    },
+    "react/jsx-dev-runtime": {
+      "src": "../../../../../node_modules/react/jsx-dev-runtime.js",
+      "file": "react_jsx-dev-runtime.js",
+      "fileHash": "d95ec6b1",
+      "needsInterop": true
+    },
+    "zustand": {
+      "src": "../../../../../node_modules/zustand/esm/index.mjs",
+      "file": "zustand.js",
+      "fileHash": "6e813bea",
+      "needsInterop": false
+    },
+    "@stomp/stompjs": {
+      "src": "../../../../../node_modules/@stomp/stompjs/bundles/stomp.umd.js",
+      "file": "@stomp_stompjs.js",
+      "fileHash": "00c7e491",
+      "needsInterop": true
+    },
+    "@tosspayments/payment-sdk": {
+      "src": "../../../../../node_modules/@tosspayments/payment-sdk/dist/tosspayments.esm.js",
+      "file": "@tosspayments_payment-sdk.js",
+      "fileHash": "283f2dbb",
+      "needsInterop": false
+    },
+    "axios": {
+      "src": "../../../../../node_modules/axios/index.js",
+      "file": "axios.js",
+      "fileHash": "0eb01b7f",
+      "needsInterop": false
+    },
+    "react-dom/client": {
+      "src": "../../../../../node_modules/react-dom/client.js",
+      "file": "react-dom_client.js",
+      "fileHash": "95974806",
+      "needsInterop": true
+    },
+    "react-router-dom": {
+      "src": "../../../../../node_modules/react-router-dom/dist/index.mjs",
+      "file": "react-router-dom.js",
+      "fileHash": "b12e033f",
+      "needsInterop": false
+    },
+    "sockjs-client": {
+      "src": "../../../../../node_modules/sockjs-client/lib/entry.js",
+      "file": "sockjs-client.js",
+      "fileHash": "e37b41a4",
+      "needsInterop": true
+    }
+  },
+  "chunks": {
+    "chunk-FLSUGBLH": {
+      "file": "chunk-FLSUGBLH.js"
+    },
+    "chunk-LXAKBU6L": {
+      "file": "chunk-LXAKBU6L.js"
+    },
+    "chunk-G3PMV62Z": {
+      "file": "chunk-G3PMV62Z.js"
+    }
+  }
+}
