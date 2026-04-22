@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import './AuthModal.css';
 import { authApi } from '../../services/authApi';
 import { useAuthStore } from '../../store/authStore';
+import LegalModal from '../common/LegalModal';
 
 type Tab = 'login' | 'signup';
 
@@ -292,6 +293,7 @@ function SignupForm({ onSwitchTab, onClose }: { onSwitchTab: () => void; onClose
     const [agreeAll,     setAgreeAll]     = useState(false);
     const [agreeTerms,   setAgreeTerms]   = useState(false);
     const [agreePrivacy, setAgreePrivacy] = useState(false);
+    const [legalModal,   setLegalModal]   = useState<'terms' | 'privacy' | null>(null);
     const [error,      setError]      = useState('');
     const [loading,    setLoading]    = useState(false);
 
@@ -730,16 +732,22 @@ function SignupForm({ onSwitchTab, onClose }: { onSwitchTab: () => void; onClose
                 <label className="modal-terms-item">
                     <input type="checkbox" checked={agreeTerms} onChange={(e) => handleTerms(e.target.checked)} />
                     <span className="modal-terms-label">
-                        <a href="#" className="modal-terms-link" onClick={(e) => e.preventDefault()}>이용약관</a> 동의 (필수)
+                        <button type="button" className="modal-terms-link" onClick={() => setLegalModal('terms')}>이용약관</button>
+                        {' '}동의 (필수)
                     </span>
                 </label>
                 <label className="modal-terms-item">
                     <input type="checkbox" checked={agreePrivacy} onChange={(e) => handlePrivacy(e.target.checked)} />
                     <span className="modal-terms-label">
-                        <a href="#" className="modal-terms-link" onClick={(e) => e.preventDefault()}>개인정보 처리방침</a> 동의 (필수)
+                        <button type="button" className="modal-terms-link" onClick={() => setLegalModal('privacy')}>개인정보 처리방침</button>
+                        {' '}동의 (필수)
                     </span>
                 </label>
             </div>
+
+            {legalModal && (
+                <LegalModal type={legalModal} onClose={() => setLegalModal(null)} />
+            )}
 
             {error && <p className="modal-error">{error}</p>}
 

@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authApi } from '../../services/authApi';
 import { useAuthStore } from '../../store/authStore';
+import LegalModal from '../../components/common/LegalModal';
 import './style/SignupPage.css';
 
 function getPasswordStrength(pw: string): 0 | 1 | 2 | 3 {
@@ -51,6 +52,8 @@ export default function SignupPage() {
   const [agreeTerms,   setAgreeTerms]   = useState(false);
   const [agreePrivacy, setAgreePrivacy] = useState(false);
   const agreeAll = agreeTerms && agreePrivacy;
+
+  const [legalModal, setLegalModal] = useState<'terms' | 'privacy' | null>(null);
 
   const [error,   setError]   = useState('');
   const [loading, setLoading] = useState(false);
@@ -533,14 +536,24 @@ export default function SignupPage() {
             <label className="terms-item">
               <input type="checkbox" checked={agreeTerms}
                 onChange={(e) => setAgreeTerms(e.target.checked)} />
-              <span className="terms-label required-mark">이용약관 동의</span>
+              <span className="terms-label">
+                <button type="button" className="terms-link" onClick={() => setLegalModal('terms')}>이용약관</button>
+                {' '}동의 (필수)
+              </span>
             </label>
             <label className="terms-item">
               <input type="checkbox" checked={agreePrivacy}
                 onChange={(e) => setAgreePrivacy(e.target.checked)} />
-              <span className="terms-label required-mark">개인정보 처리방침 동의</span>
+              <span className="terms-label">
+                <button type="button" className="terms-link" onClick={() => setLegalModal('privacy')}>개인정보 처리방침</button>
+                {' '}동의 (필수)
+              </span>
             </label>
           </div>
+
+          {legalModal && (
+            <LegalModal type={legalModal} onClose={() => setLegalModal(null)} />
+          )}
 
           {error && <p className="signup-error">{error}</p>}
 

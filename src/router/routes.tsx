@@ -15,6 +15,8 @@ import ChatPage from "../pages/chat/ChatPage";
 import SupportPage from "../pages/SupportPage";
 import GeneticsCalculatorPage from "../pages/genetics/GeneticsCalculatorPage";
 import GeneticsAdminPage from "../pages/genetics/GeneticsAdminPage";
+import TermsPage from "../pages/TermsPage";
+import PrivacyPage from "../pages/PrivacyPage";
 import type {JSX} from "react";
 
 export type RouteDef = {
@@ -46,6 +48,8 @@ export const appRoutes: RouteDef[] = [
     { path: "/payment/success", element: <PaymentSuccessPage /> },
     { path: "/payment/fail", element: <PaymentFailPage /> },
     { path: "/support", element: <SupportPage /> },
+    { path: "/terms", element: <TermsPage /> },
+    { path: "/privacy", element: <PrivacyPage /> },
 ];
 
 // Header에서는 메뉴 제거
